@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">EngGo</string>
+
+    <string name="home">Home</string>
+    <string name="dictionary">Dictionary</string>
+    <string name="courses">Courses</string>
+    <string name="folder_library">Library</string>
+    <string name="profile">Profile</string>
 </resources>
