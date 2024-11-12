@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
 }
 
 android {
@@ -67,7 +69,18 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    //navigation
     implementation ("androidx.navigation:navigation-compose:2.8.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui:1.7.5")
+
+    implementation("androidx.compose.foundation:foundation:1.7.5")
+
+    //db connect
+    implementation("mysql:mysql-connector-java:8.0.33")
+    // Retrofit
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
