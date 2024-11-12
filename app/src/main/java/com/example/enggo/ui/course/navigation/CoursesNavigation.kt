@@ -1,10 +1,10 @@
-package com.example.enggo.ui.courses.navigation
+package com.example.enggo.ui.course.navigation
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.example.enggo.ui.courses.CoursesRoute
+import com.example.enggo.ui.course.CoursesRoute
 
 const val COURSES_ROUTE = "courses"
 

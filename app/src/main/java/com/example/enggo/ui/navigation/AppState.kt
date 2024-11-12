@@ -11,7 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.example.enggo.navigation.TopLevelDestination
-import com.example.enggo.ui.courses.navigation.navigateToCourses
+import com.example.enggo.ui.course.navigation.navigateToCourses
 import com.example.enggo.ui.home.navigation.navigateToHome
 
 @Composable
