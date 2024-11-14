@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import com.example.enggo.ui.course.navigation.coursesScreen
+import com.example.enggo.ui.course.navigation.navigateToUnitList
+import com.example.enggo.ui.course.navigation.unitListScreen
 import com.example.enggo.ui.home.navigation.HOME_ROUTE
 import com.example.enggo.ui.home.navigation.homeScreen
 import com.example.enggo.ui.navigation.AppState
@@ -21,6 +23,7 @@ fun AppNavHost(
         startDestination = startDestination,
     ) {
         homeScreen()
-        coursesScreen()
+        coursesScreen(onCourseClick = navController::navigateToUnitList)
+        unitListScreen(onBackPressed = navController::popBackStack)
     }
 }

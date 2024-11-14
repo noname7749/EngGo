@@ -49,7 +49,7 @@ fun SearchComponent(
             placeholder = {
                 Text(
                     text = "Search for a word",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
