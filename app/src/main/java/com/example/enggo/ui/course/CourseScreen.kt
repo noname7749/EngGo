@@ -1,5 +1,6 @@
 package com.example.enggo.ui.course
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -61,16 +62,20 @@ import com.example.enggo.model.course.UnitData
 import com.example.enggo.ui.theme.EngGoTheme
 
 @Composable
-internal fun CoursesRoute() {
+internal fun CourseRoute(
+    onCourseClick: (Int) -> Unit,
+) {
     // TODO()
     val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
-    CoursesScreen(
+    CourseScreen(
+        onCourseClick = onCourseClick,
         //courseUiState = courseViewModel.courseUiState
     )
 }
 
 @Composable
-fun CoursesScreen(
+fun CourseScreen(
+    onCourseClick: (Int) -> Unit
     //courseUiState: CourseUiState,
 ) {
     // TODO()
@@ -101,7 +106,8 @@ fun CoursesScreen(
             )
             CourseListRow(
                 coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onItemClick = onCourseClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -111,7 +117,8 @@ fun CoursesScreen(
             )
             CourseListRow(
                 coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onItemClick = onCourseClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -121,7 +128,8 @@ fun CoursesScreen(
             )
             CourseListRow(
                 coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onItemClick = onCourseClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -131,7 +139,8 @@ fun CoursesScreen(
             )
             CourseListRow(
                 coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onItemClick = onCourseClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -141,7 +150,8 @@ fun CoursesScreen(
             )
             CourseListRow(
                 coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onItemClick = onCourseClick
             )
         }
 //        LazyColumn(contentPadding = it) {
@@ -171,6 +181,7 @@ fun CoursesTopAppBar(modifier: Modifier = Modifier) {
 @Composable
 fun CourseListRow(
     coursesList: List<Course>,
+    onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -187,9 +198,7 @@ fun CourseListRow(
         items(coursesList, key = { course -> course.courseId }) { course ->
             CourseListItem(
                 courses = course,
-                onItemClick = {
-                    // TODO: click
-                },
+                onItemClick = onItemClick,
                 modifier = Modifier
                     .fillParentMaxWidth()
                     .height(128.dp) // TODO: create dimens value
@@ -211,14 +220,15 @@ fun CourseListRow(
 @Composable
 fun CourseListItem(
     courses: Course,
-    onItemClick: (Course) -> Unit,
+    onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    //Log.d("CourseListItem", "Course ID: ${courses.courseId}")
     Card(
         elevation = CardDefaults.cardElevation(),
         modifier = modifier,
         shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
-        onClick = { onItemClick(courses) }
+        onClick = { onItemClick(courses.courseId) }
     ) {
         Row (
             modifier = Modifier.fillMaxWidth()
@@ -239,7 +249,7 @@ fun CourseListItem(
                     )
             ) {
                 Text(
-                    text = courses.courseName,
+                    text = (courses.courseId.toString() + " " + courses.courseName),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp) // TODO: create dimens value
                 )
@@ -450,6 +460,7 @@ fun CoursesRowPreview() {
         Surface {
             CourseListRow(
                 coursesList = coursesList,
+                onItemClick = {}
             )
         }
     }
@@ -520,7 +531,7 @@ fun LessonItemListPreview() {
 fun CourseScreenPreview() {
     EngGoTheme {
         Surface {
-            CoursesScreen()
+            CourseScreen {}
         }
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.example.enggo.R
 import com.example.enggo.ui.dictionary.model.Meaning
 import com.example.enggo.ui.dictionary.model.WordModel
+import com.example.enggo.ui.theme.EngGoTheme
 
 var dictionaryStringBuilder = StringBuilder()
 val mockWordModel = WordModel(
@@ -197,4 +199,14 @@ fun WordSearchScreenPreview() {
 @Preview
 fun SearchContentPreview() {
     SearchContent(wordModel = mockWordModel)
+}
+
+@Preview
+@Composable
+fun CourseScreenPreview() {
+    EngGoTheme {
+        Surface {
+            WordSearchScreen()
+        }
+    }
 }
