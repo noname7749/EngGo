@@ -5,7 +5,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.example.enggo.ui.course.CourseRoute
-import com.example.enggo.ui.course.UnitListRoute
 
 const val COURSES_ROUTE = "course"
 

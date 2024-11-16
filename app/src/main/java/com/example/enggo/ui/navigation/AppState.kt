@@ -13,6 +13,7 @@ import androidx.navigation.navOptions
 import com.example.enggo.navigation.TopLevelDestination
 import com.example.enggo.ui.course.navigation.navigateToCourses
 import com.example.enggo.ui.home.navigation.navigateToHome
+import java.time.Instant
 
 @Composable
 fun rememberAppState(
@@ -22,12 +23,20 @@ fun rememberAppState(
     return AppState(context, navController)
 }
 
+const val EXPIRED_TIME = 259200000
 
 @Stable
 class AppState(
     private val context: Context,
     val navController: NavHostController
 ) {
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val currentUserId = sharedPref.getString("currentUserId", null)
+    val lastLoginTimestamp = sharedPref.getString("session", "0")
+    val currentTimestamp = Instant.now().toEpochMilli()
+    val isTimeoutSession = (currentTimestamp > (lastLoginTimestamp!!.toLong() + EXPIRED_TIME) || currentUserId == null)
+
+
     val currentDestination: NavDestination?
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination

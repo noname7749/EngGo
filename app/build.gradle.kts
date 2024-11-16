@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+
+    id("com.google.gms.google-services")
+    id("com.google.devtools.ksp") version "1.9.0-1.0.13"
 }
 
 android {
@@ -11,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.enggo"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -62,6 +65,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.room.common)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.messaging.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,8 +81,6 @@ dependencies {
 
     implementation("androidx.compose.foundation:foundation:1.7.5")
 
-    //db connect
-    implementation("mysql:mysql-connector-java:8.0.33")
     // Retrofit
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -85,4 +88,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //converter
     implementation ("com.google.code.gson:gson:2.10.1")
+
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    //room
+    implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+    implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
+    ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
