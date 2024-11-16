@@ -1,9 +1,5 @@
 package com.example.enggo.ui.course
 
-import android.util.Log
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,22 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,10 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -53,44 +42,53 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCbrt
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
 import com.example.enggo.model.course.Course
-import com.example.enggo.model.course.Lesson
-import com.example.enggo.model.course.UnitData
+import com.example.enggo.ui.AppViewModelProvider
 import com.example.enggo.ui.theme.EngGoTheme
+
+enum class LevelTitles(val level: Int, val title: String) {
+    ELEMENTARY(1, "Elementary Courses"),
+    PRE_INTERMEDIATE(2, "Pre-Intermediate Courses"),
+    INTERMEDIATE(3, "Intermediate Courses"),
+    INTERMEDIATE_PLUS(4, "Intermediate Plus Courses"),
+    UPPER_INTERMEDIATE(5, "Upper-Intermediate Courses"),
+    ADVANCED(6, "Advanced Courses"),
+    IELTS(7, "IELTS Courses")
+}
 
 @Composable
 internal fun CourseRoute(
     onCourseClick: (Int) -> Unit,
 ) {
     // TODO()
-    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
+    val courseViewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
     CourseScreen(
         onCourseClick = onCourseClick,
+        viewModel = courseViewModel,
         //courseUiState = courseViewModel.courseUiState
     )
 }
 
 @Composable
 fun CourseScreen(
-    onCourseClick: (Int) -> Unit
+    onCourseClick: (Int) -> Unit,
     //courseUiState: CourseUiState,
+    viewModel: CourseViewModel,
+    modifier: Modifier = Modifier,
 ) {
     // TODO()
 
-//    when (courseUiState) {
-//        is CourseUiState.Loading -> Text(text = "loading")
-//        is CourseUiState.Success -> Text(text = courseUiState.courses[0].courseName) // TODO()
-//        is CourseUiState.Error -> Text(text = "error")
-//    }
+    val courseUiState by viewModel.courseUiState.collectAsState()
 
-    val coursesList = listOf(
-        Course(courseId = 1, courseName = "Kotlin Programming", description = "Learn Kotlin from beginner to advanced level.", level = 1),
-        Course(courseId = 2, courseName = "Android Development", description = "Build Android apps using Kotlin.", level = 2),
-        Course(courseId = 3, courseName = "Machine Learning", description = "Introduction to Machine Learning concepts.", level = 3)
-    )
+    val groupedCourses = courseUiState.courseList.groupBy { it.level }
+
+//    val coursesList = listOf(
+//        Course(courseId = 1, courseName = "Kotlin Programming", description = "Learn Kotlin from beginner to advanced level.", level = 1),
+//        Course(courseId = 2, courseName = "Android Development", description = "Build Android apps using Kotlin.", level = 2),
+//        Course(courseId = 3, courseName = "Machine Learning", description = "Introduction to Machine Learning concepts.", level = 3)
+//    )
     Scaffold(
         topBar = {
             CoursesTopAppBar()
@@ -99,64 +97,23 @@ fun CourseScreen(
         Column(modifier = Modifier.padding(paddingValues)
             .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                text = "Temp Elementary Courses",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            CourseListRow(
-                coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                onItemClick = onCourseClick
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Temp Pre-intermediate Courses",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            CourseListRow(
-                coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                onItemClick = onCourseClick
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Temp Intermediate Courses",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            CourseListRow(
-                coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                onItemClick = onCourseClick
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Temp Advanced Courses",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            CourseListRow(
-                coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                onItemClick = onCourseClick
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Temp IELTS Courses",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            CourseListRow(
-                coursesList = coursesList,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                onItemClick = onCourseClick
-            )
+            LevelTitles.values().forEach { level ->
+                val coursesForLevel = groupedCourses[level.level]
+                if (!coursesForLevel.isNullOrEmpty()) {
+                    Text(
+                        text = level.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                    )
+                    CourseListRow(
+                        coursesList = coursesForLevel,
+                        onItemClick = onCourseClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
         }
-//        LazyColumn(contentPadding = it) {
-//
-//        }
     }
 }
 
@@ -253,13 +210,15 @@ fun CourseListItem(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp) // TODO: create dimens value
                 )
-                Text(
-                    text = courses.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 3
-                )
+                courses.description?.let { //TODO: check null
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 3
+                    )
+                }
                 Spacer(Modifier.weight(1f))
                 Row (
                     verticalAlignment = Alignment.CenterVertically
@@ -315,138 +274,7 @@ fun CourseListImageItem(
     }
 }
 
-@Composable
-fun UnitItemList(
-    unitData: UnitData,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Card(
-        elevation = CardDefaults.cardElevation(),
-        modifier = modifier,
-        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
-        onClick = { expanded = !expanded }
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(
-                    vertical = dimensionResource(R.dimen.padding_small),
-                    horizontal = dimensionResource(R.dimen.padding_medium)
-                )
-                .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                )
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_small))
-            ) {
-                Text(
-                    text = unitData.unitName,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(Modifier.weight(1f))
-                Icon(
-                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-            }
-            if (expanded) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small)))
-                LessonList(
-                    lessonList = unitData.lesson,
-                    onItemClick = {}, // TODO
-                    modifier = Modifier.padding(
-                        start = dimensionResource(R.dimen.padding_medium),
-                        top = dimensionResource(R.dimen.padding_small),
-                        bottom = dimensionResource(R.dimen.padding_medium),
-                        end = dimensionResource(R.dimen.padding_medium)
-                    )
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun LessonList(
-    lessonList: List<Lesson>,
-    onItemClick: (Lesson) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn {
-        itemsIndexed(lessonList) { index, lesson ->
-            LessonItemList(
-                lesson = lesson,
-                onItemClick = { onItemClick(lesson) }
-            )
-            if (index != lessonList.size - 1) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small)))
-            }
-        }
-    }
-}
-
-@Composable
-fun LessonItemList(
-    lesson: Lesson,
-    onItemClick: (Lesson) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        elevation = CardDefaults.cardElevation(),
-        modifier = modifier,
-        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
-        onClick = { onItemClick(lesson) },
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(
-                vertical = dimensionResource(R.dimen.padding_small),
-                horizontal = dimensionResource(R.dimen.padding_medium)
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .size(64.dp) // TODO
-                    .padding(dimensionResource(R.dimen.padding_small))
-            ) {
-                Text(
-                    text = lesson.lessonName,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 4.dp) // TODO: create dimens value
-                )
-                Spacer(Modifier.weight(1f))
-                val text = when {
-                    lesson.hasTheory && lesson.hasExercise -> "Theory | Exercise"
-                    lesson.hasTheory -> "Theory"
-                    else -> "Exercise"
-                }
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-            //Spacer(Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Filled.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary
-            )
-        }
-    }
-}
 
 @Preview
 @Composable
@@ -486,52 +314,16 @@ fun CoursesListItemPreview() {
     }
 }
 
-@Preview
-@Composable
-fun UnitItemListPreview() {
-    val sampleUnitData = UnitData(
-        unitId = 1,
-        unitName = "Music",
-        lesson = listOf(
-            Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
-            Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
-            Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
-        )
-    )
-    EngGoTheme {
-        Surface {
-            UnitItemList(
-                unitData = sampleUnitData
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun LessonItemListPreview() {
-    val sampleLesson = Lesson(
-        lessonId = 1,
-        hasTheory = true,
-        hasExercise = true,
-        lessonName = "Grammar - Present simple"
-    )
-    EngGoTheme {
-        Surface {
-            LessonItemList(
-                lesson = sampleLesson,
-                onItemClick = {}
-            )
-        }
-    }
-}
 
 @Preview
 @Composable
 fun CourseScreenPreview() {
     EngGoTheme {
         Surface {
-            CourseScreen {}
+            CourseScreen(
+                onCourseClick = {},
+                viewModel = viewModel(factory = AppViewModelProvider.Factory)
+            )
         }
     }
 }

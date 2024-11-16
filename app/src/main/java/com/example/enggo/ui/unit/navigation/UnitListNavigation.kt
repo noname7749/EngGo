@@ -1,11 +1,11 @@
-package com.example.enggo.ui.course.navigation
+package com.example.enggo.ui.unit.navigation
 
 import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.example.enggo.ui.course.UnitListRoute
+import com.example.enggo.ui.unit.UnitListRoute
 
 const val UNIT_LIST_ROUTE = "course/{courseId}"
 
@@ -22,11 +22,6 @@ fun NavGraphBuilder.unitListScreen(
     onBackPressed: () -> Unit,
 ) {
     composable(UNIT_LIST_ROUTE) { backStackEntry ->
-//        val id = backStackEntry.arguments?.getInt("courseId")
-//        UnitListRoute(
-//            courseId = id,
-//            onBackPress = onBackPressed,
-//        )
         val courseId = backStackEntry.arguments?.getString("courseId")?.toIntOrNull() // Chuyển đổi String thành Int
         if (courseId != null) {
             UnitListRoute(
