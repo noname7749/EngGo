@@ -9,6 +9,8 @@ import com.example.enggo.ui.unit.navigation.unitListScreen
 import com.example.enggo.ui.home.navigation.HOME_ROUTE
 import com.example.enggo.ui.home.navigation.homeScreen
 import com.example.enggo.ui.home.navigation.navigateToHome
+import com.example.enggo.ui.lesson.navigation.lessonScreen
+import com.example.enggo.ui.lesson.navigation.navigateToLesson
 import com.example.enggo.ui.login.navigation.LOGIN_ROUTE
 import com.example.enggo.ui.login.navigation.loginScreen
 import com.example.enggo.ui.login.navigation.navigateToLogin
@@ -30,7 +32,8 @@ fun AppNavHost(
     ) {
         homeScreen()
         coursesScreen(onCourseClick = navController::navigateToUnitList)
-        unitListScreen(onBackPressed = navController::popBackStack)
+        unitListScreen(onBackPressed = navController::popBackStack, onLessonPressed = navController::navigateToLesson)
+        lessonScreen (onBackPressed = navController::popBackStack)
         registerScreen (onRegisterClick = navController::navigateToLogin, redirectToLogin = navController::navigateToLogin)
         loginScreen (onLoginClick = navController::navigateToHome , redirectToRegister = navController::navigateToRegister)
     }

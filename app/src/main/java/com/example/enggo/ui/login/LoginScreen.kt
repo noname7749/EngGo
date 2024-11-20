@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -84,11 +85,12 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(R.drawable.course_1), //TODO: change logo later
+            painter = painterResource(R.drawable.app_icon), //TODO: change logo later
             contentDescription = "App Logo",
             modifier = Modifier
                 .size(156.dp)
                 .align(Alignment.CenterHorizontally)
+                .padding(bottom = dimensionResource(R.dimen.padding_medium))
         )
         Text(
             text = "Log in to EngGo",
