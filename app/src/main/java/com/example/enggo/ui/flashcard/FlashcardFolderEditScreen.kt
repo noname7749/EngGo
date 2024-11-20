@@ -31,26 +31,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.enggo.R
+import com.example.enggo.model.Flashcard
 import com.example.enggo.model.FlashcardFolder
-import com.example.enggo.model.termCreate
 import com.example.enggo.ui.theme.EngGoTheme
 
 @Composable
-fun createFCFolderScreen(fcFolder : FlashcardFolder) {
-    var terms = remember { mutableStateListOf<String>() }
-    var defs = remember { mutableStateListOf<String>() }
-    var removeIndexAt by remember { mutableStateOf(0) }
-    var FolderName by remember { mutableStateOf("Folder name") }
+fun editFCFolderScreen(fcFolder : FlashcardFolder) {
+    var init by remember  { mutableStateOf(0) }
+    var FolderName by remember { mutableStateOf(fcFolder.name) }
 
+    var term = remember { mutableStateListOf<Flashcard>() }
+    if (init == 0) {
+        for (x in fcFolder.flashcardList)
+            term.add(x)
+        init = 1
+    }
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        if (terms.size < 2) {
-            terms.add("")
-            terms.add("")
-            defs.add("")
-            defs.add("")
-        }
         Text(
             text = "Top bar",
             fontSize = 20.sp,
@@ -79,15 +77,14 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                     .padding(top = 10.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
                     .border(1.dp, Color.Black)
                     .clickable {
-                        terms.add("")
-                        defs.add("")
+                        term.add(Flashcard("", ""))
                     }
             ) {
                 Text(
                     text = "Add Term",
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)
+                    modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp, end = 10.dp)
                 )
             }
 
@@ -110,7 +107,7 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
         LazyColumn(
             modifier = Modifier.padding(bottom = 50.dp)
         ) {
-            itemsIndexed(terms) { index, item ->
+            itemsIndexed(term) { index, item ->
                 Card(
                     modifier = Modifier.fillMaxWidth()
                         .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
@@ -118,13 +115,11 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                     Column() {
                         Row(modifier = Modifier.height(30.dp)) {
                             Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.9f))
-                            if (terms.size >= 3) {
+                            if (term.size >= 3) {
                                 Box(
                                     modifier = Modifier.fillMaxSize()
                                         .clickable {
-                                            removeIndexAt = index
-                                            terms.removeAt(index)
-                                            defs.removeAt(index)
+                                            term.removeAt(index)
                                         }
                                 ) {
                                     Image(
@@ -136,8 +131,8 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                             }
                         }
                         TextField(
-                            value = terms[index],
-                            onValueChange = { terms[index] = it },
+                            value = term[index].FirstCard,
+                            onValueChange = { term[index].FirstCard = it },
                             modifier = Modifier.fillMaxWidth()
                                 .padding(start = 10.dp, end = 10.dp, bottom = 5.dp)
                         )
@@ -147,10 +142,10 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                             fontSize = 15.sp,
                             modifier = Modifier.padding(start = 10.dp)
                         )
-
+                        
                         TextField(
-                            value = defs[index],
-                            onValueChange = { defs[index] = it },
+                            value = term[index].SecondCard,
+                            onValueChange = { term[index].SecondCard = it },
                             modifier = Modifier.fillMaxWidth()
                                 .padding(start = 10.dp, end = 10.dp, bottom = 5.dp)
                         )
@@ -169,11 +164,14 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
 
 @Preview(showBackground = true)
 @Composable
-fun createFCFolderPreview() {
+fun editFCFolderPreview() {
     EngGoTheme {
         var t : FlashcardFolder = FlashcardFolder("ABC")
+        t.addFlashcard(Flashcard("abc", "xyz"))
+        t.addFlashcard(Flashcard("abc2", "xyz2"))
+        t.addFlashcard(Flashcard("abc3", "xyz3"))
         Surface(modifier = Modifier.fillMaxSize()) {
-            createFCFolderScreen(fcFolder = t)
+            editFCFolderScreen(fcFolder = t)
         }
     }
 }
