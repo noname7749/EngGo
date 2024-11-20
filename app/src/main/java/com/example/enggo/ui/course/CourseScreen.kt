@@ -44,9 +44,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
+import com.example.enggo.data.service.CourseService
 import com.example.enggo.model.course.Course
-import com.example.enggo.ui.AppViewModelProvider
 import com.example.enggo.ui.theme.EngGoTheme
+import com.google.firebase.firestore.FirebaseFirestore
 
 enum class LevelTitles(val level: Int, val title: String) {
     ELEMENTARY(1, "Elementary Courses"),
@@ -63,10 +64,15 @@ internal fun CourseRoute(
     onCourseClick: (Int) -> Unit,
 ) {
     // TODO()
-    val courseViewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    //val courseViewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val courseService = CourseService(FirebaseFirestore.getInstance())
+    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModelFactory(courseService))
+
+    val unfilteredCourses by courseViewModel.courses.collectAsState()
+
     CourseScreen(
         onCourseClick = onCourseClick,
-        viewModel = courseViewModel,
+        unfilteredCoursesList = unfilteredCourses,
         //courseUiState = courseViewModel.courseUiState
     )
 }
@@ -75,20 +81,17 @@ internal fun CourseRoute(
 fun CourseScreen(
     onCourseClick: (Int) -> Unit,
     //courseUiState: CourseUiState,
-    viewModel: CourseViewModel,
+    unfilteredCoursesList: List<Course>,
     modifier: Modifier = Modifier,
 ) {
     // TODO()
 
-    val courseUiState by viewModel.courseUiState.collectAsState()
+    //val courseUiState by viewModel.courseUiState.collectAsState()
 
-    val groupedCourses = courseUiState.courseList.groupBy { it.level }
 
-//    val coursesList = listOf(
-//        Course(courseId = 1, courseName = "Kotlin Programming", description = "Learn Kotlin from beginner to advanced level.", level = 1),
-//        Course(courseId = 2, courseName = "Android Development", description = "Build Android apps using Kotlin.", level = 2),
-//        Course(courseId = 3, courseName = "Machine Learning", description = "Introduction to Machine Learning concepts.", level = 3)
-//    )
+    val groupedCourses = unfilteredCoursesList.groupBy { it.course_level }
+
+
     Scaffold(
         topBar = {
             CoursesTopAppBar()
@@ -152,7 +155,7 @@ fun CourseListRow(
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small)),
         userScrollEnabled = true
     ) {
-        items(coursesList, key = { course -> course.courseId }) { course ->
+        items(coursesList, key = { course -> course.course_id }) { course ->
             CourseListItem(
                 courses = course,
                 onItemClick = onItemClick,
@@ -185,14 +188,14 @@ fun CourseListItem(
         elevation = CardDefaults.cardElevation(),
         modifier = modifier,
         shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
-        onClick = { onItemClick(courses.courseId) }
+        onClick = { onItemClick(courses.course_id) }
     ) {
         Row (
             modifier = Modifier.fillMaxWidth()
                 .size(128.dp) // TODO: create dimens value
         ){
             CourseListImageItem(
-                courseId = courses.courseId,
+                courseId = courses.course_id,
                 modifier = Modifier.size(128.dp) // TODO: create dimens value
             )
             Column(
@@ -206,11 +209,11 @@ fun CourseListItem(
                     )
             ) {
                 Text(
-                    text = (courses.courseId.toString() + " " + courses.courseName),
+                    text = (courses.course_id.toString() + " " + courses.course_name),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp) // TODO: create dimens value
                 )
-                courses.description?.let { //TODO: check null
+                courses.course_description?.let { //TODO: check null
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
@@ -224,7 +227,7 @@ fun CourseListItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (courses.level == 1) "Elementary" else "Intermediate", // TODO
+                        text = if (courses.course_level == 1) "Elementary" else "Intermediate", // TODO
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(Modifier.weight(1f))
@@ -280,9 +283,9 @@ fun CourseListImageItem(
 @Composable
 fun CoursesRowPreview() {
     val coursesList = listOf(
-        Course(courseId = 1, courseName = "Kotlin Programming", description = "Learn Kotlin from beginner to advanced level.", level = 1),
-        Course(courseId = 2, courseName = "Android Development", description = "Build Android apps using Kotlin.", level = 2),
-        Course(courseId = 3, courseName = "Machine Learning", description = "Introduction to Machine Learning concepts.", level = 3)
+        Course(course_id = 1, course_name = "Kotlin Programming", course_description = "Learn Kotlin from beginner to advanced level.", course_level = 1),
+        Course(course_id = 2, course_name = "Android Development", course_description = "Build Android apps using Kotlin.", course_level = 2),
+        Course(course_id = 3, course_name = "Machine Learning", course_description = "Introduction to Machine Learning concepts.", course_level = 3)
     )
     EngGoTheme {
         Surface {
@@ -299,10 +302,10 @@ fun CoursesRowPreview() {
 @Composable
 fun CoursesListItemPreview() {
     val sampleCourse = Course(
-        courseId = 1,
-        courseName = "Kotlin Programming",
-        description = "Learn Kotlin from beginner to advanced level.",
-        level = 1
+        course_id = 1,
+        course_name = "Kotlin Programming",
+        course_description = "Learn Kotlin from beginner to advanced level.",
+        course_level = 1
     )
     EngGoTheme {
         Surface {
@@ -318,11 +321,16 @@ fun CoursesListItemPreview() {
 @Preview
 @Composable
 fun CourseScreenPreview() {
+    val coursesList = listOf(
+        Course(course_id = 1, course_name = "Kotlin Programming", course_description = "Learn Kotlin from beginner to advanced level.", course_level = 1),
+        Course(course_id = 2, course_name = "Android Development", course_description = "Build Android apps using Kotlin.", course_level = 2),
+        Course(course_id = 3, course_name = "Machine Learning", course_description = "Introduction to Machine Learning concepts.", course_level = 3)
+    )
     EngGoTheme {
         Surface {
             CourseScreen(
                 onCourseClick = {},
-                viewModel = viewModel(factory = AppViewModelProvider.Factory)
+                unfilteredCoursesList = coursesList
             )
         }
     }

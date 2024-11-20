@@ -7,23 +7,37 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,33 +45,115 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.enggo.R
 import com.example.enggo.model.course.Lesson
 import com.example.enggo.model.course.UnitData
+import com.example.enggo.ui.course.CourseListRow
+import com.example.enggo.ui.course.CoursesTopAppBar
+import com.example.enggo.ui.course.LevelTitles
 import com.example.enggo.ui.theme.EngGoTheme
 
 @Composable
 internal fun UnitListRoute(
     courseId: Int?,
     onBackPress: () -> Unit,
+    onLessonPressed: (Int) -> Unit
 ) {
-    Text(
-        text = "YOU JUST CLICK COURSE WITH ID $courseId"
-    )
     // TODO()
     //val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
-    UnitListScreen()
+    UnitListScreen(courseId = courseId)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UnitListScreen() {
-//    Text(
-//        text = "Unit List Screen"
-//    )
+fun UnitListScreen(
+    courseId: Int?,
+    modifier: Modifier = Modifier
+) {
+
+    val sampleUnitData = listOf(
+        UnitData(
+            unitId = 1,
+            unitName = "Music",
+            lesson = listOf(
+                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
+                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
+                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            )
+        ),
+        UnitData(
+            unitId = 2,
+            unitName = "Music",
+            lesson = listOf(
+                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
+                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
+                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            )
+        ),
+        UnitData(
+            unitId = 1,
+            unitName = "Music",
+            lesson = listOf(
+                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
+                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
+                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            )
+        )
+    )
+
+    val topBarState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
+    Scaffold(
+        topBar = {
+            UnitListTopAppBar(courseId = courseId)
+        },
+        contentWindowInsets = ScaffoldDefaults
+            .contentWindowInsets
+            .exclude(WindowInsets.navigationBars)
+            .exclude(WindowInsets.ime),
+        modifier = modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues),
+                //.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
+        ) {
+            sampleUnitData.forEach{unitData ->
+                UnitItemList(
+                    unitData = unitData,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnitListTopAppBar(
+    courseId: Int?,
+    modifier: Modifier = Modifier
+) {
+    TopAppBar(
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = " COURSE WITH ID $courseId", // TODO
+                    style = MaterialTheme.typography.displaySmall
+                )
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -161,7 +257,8 @@ fun LessonItemList(
         ) {
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
+                    //.weight(1f)
                     .size(64.dp) // TODO
                     .padding(dimensionResource(R.dimen.padding_small))
             ) {
@@ -230,6 +327,16 @@ fun LessonItemListPreview() {
                 lesson = sampleLesson,
                 onItemClick = {}
             )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun UnitListScreenPreview() {
+    EngGoTheme {
+        Surface() {
+            UnitListScreen(5)
         }
     }
 }

@@ -8,17 +8,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
-@Entity(tableName = "course")
-data class Course (
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "course_id")
-    val courseId: Int = 0,
-    @ColumnInfo(name = "course_name")
-    val courseName: String,
-    @ColumnInfo(name = "course_description")
-    val description: String?,
-    @ColumnInfo(name = "course_level")
-    val level: Int,
+class Course (
+    val course_id: Int = 0,
+    val course_name: String = "",
+    val course_description: String = "",
+    val course_level: Int = 0,
 )
 
 // level
