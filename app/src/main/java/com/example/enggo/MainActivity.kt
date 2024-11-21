@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
                 App(appState);
             }
         }
-        //my dick so small
         FirebaseApp.initializeApp(this)
     }
 }
