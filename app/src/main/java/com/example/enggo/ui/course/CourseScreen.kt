@@ -56,7 +56,18 @@ enum class LevelTitles(val level: Int, val title: String) {
     INTERMEDIATE_PLUS(4, "Intermediate Plus Courses"),
     UPPER_INTERMEDIATE(5, "Upper-Intermediate Courses"),
     ADVANCED(6, "Advanced Courses"),
-    IELTS(7, "IELTS Courses")
+    IELTS(7, "IELTS Courses");
+
+    fun getShortTitle(): String {
+        return when (this) {
+            ELEMENTARY -> "Elementary"
+            INTERMEDIATE -> "Intermediate"
+            INTERMEDIATE_PLUS -> "Intermediate Plus"
+            UPPER_INTERMEDIATE -> "Upper Intermediate"
+            ADVANCED -> "Advanced"
+            else -> this.title
+        }
+    }
 }
 
 @Composable
@@ -226,8 +237,9 @@ fun CourseListItem(
                 Row (
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val levelTitle = LevelTitles.values().firstOrNull { it.level == courses.course_level }?.getShortTitle() ?: "Unknown"
                     Text(
-                        text = if (courses.course_level == 1) "Elementary" else "Intermediate", // TODO
+                        text = levelTitle,
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(Modifier.weight(1f))
