@@ -14,6 +14,7 @@ import com.example.enggo.navigation.TopLevelDestination
 import com.example.enggo.ui.course.navigation.navigateToCourses
 import com.example.enggo.ui.dictionary.navigation.navigateToDictionary
 import com.example.enggo.ui.home.navigation.navigateToHome
+import com.example.enggo.ui.profile.navigation.navigateToProfile
 import java.time.Instant
 
 @Composable
@@ -76,7 +77,7 @@ class AppState(
                 TopLevelDestination.DICTIONARY -> navController.navigateToDictionary(topLevelNavOptions)
                 TopLevelDestination.COURSES -> navController.navigateToCourses(topLevelNavOptions)
                 TopLevelDestination.FOLDER -> TODO()
-                TopLevelDestination.PROFILE -> TODO()
+                TopLevelDestination.PROFILE -> navController.navigateToProfile(topLevelNavOptions)
             }
         }
     }
