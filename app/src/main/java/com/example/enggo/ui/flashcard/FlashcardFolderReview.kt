@@ -194,7 +194,7 @@ fun flashCardView(FirstCard : String, SecondCard : String, modifier : Modifier =
 
 @Composable
 fun functionCard(firstText : String, secondText: String) {
-    Card(modifier = Modifier.height(80.dp).fillMaxWidth()
+    Card(modifier = Modifier.height(60.dp).fillMaxWidth()
         .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
