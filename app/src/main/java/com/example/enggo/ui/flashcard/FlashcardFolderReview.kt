@@ -2,7 +2,6 @@ package com.example.enggo.ui.flashcard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,27 +28,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
 import com.example.enggo.model.Flashcard
 import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.ui.theme.EngGoTheme
 
 @Composable
-fun FlashcardFolderView(
-    fcFolder : FlashcardFolder,
-    viewModel : FlashcardFolderReviewViewModel = FlashcardFolderReviewViewModel(),
-    modifier : Modifier = Modifier
-) {
+fun FlashcardFolderView(fcFolder : FlashcardFolder, modifier : Modifier = Modifier) {
     var pagePreview by remember { mutableStateOf(0) }
     var ok by remember { mutableStateOf(1) }
-    val firstCard by viewModel.firstCard.observeAsState(
-        initial = fcFolder.flashcardList[0].FirstCard
-    )
-
-    val secondCard by viewModel.secondCard.observeAsState(
-        initial = fcFolder.flashcardList[0].SecondCard
-    )
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -71,10 +57,6 @@ fun FlashcardFolderView(
                         if (pagePreview > 0) {
                             pagePreview--
                             ok = 1
-                            viewModel.changeReviewCard(
-                                fcFolder.flashcardList[pagePreview].FirstCard,
-                                fcFolder.flashcardList[pagePreview].SecondCard
-                            )
                         }
                     }
             ) {
@@ -90,17 +72,10 @@ fun FlashcardFolderView(
             ) {
                 if (ok == 1) {
                     ok = 0
-                    flashCardView(
-                        firstCard, secondCard,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    fcFolder.flashcardList[pagePreview].flashCardView(modifier = Modifier.fillMaxSize())
                 }
-                else {
-                    flashCardView(
-                        firstCard, secondCard,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                else
+                    fcFolder.flashcardList[pagePreview].flashCardView(modifier = Modifier.fillMaxSize())
             }
             Box(
                 modifier = Modifier.fillMaxWidth()
@@ -108,10 +83,6 @@ fun FlashcardFolderView(
                         if (pagePreview < fcFolder.flashcardNumber - 1) {
                             pagePreview++
                             ok = 1
-                            viewModel.changeReviewCard(
-                                fcFolder.flashcardList[pagePreview].FirstCard,
-                                fcFolder.flashcardList[pagePreview].SecondCard
-                            )
                         }
                     }
             ) {
@@ -163,38 +134,8 @@ fun FlashcardFolderView(
 }
 
 @Composable
-fun flashCardView(FirstCard : String, SecondCard : String, modifier : Modifier = Modifier) {
-
-    var s by remember { mutableStateOf(FirstCard) }
-
-    Card(
-        onClick = {
-            if (s.equals(FirstCard)) {
-                s = SecondCard
-            }
-            else {
-                s = FirstCard
-            }
-        },
-        modifier = modifier
-    ) {
-        Column (
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            Text(
-                text = s,
-                textAlign = TextAlign.Center,
-                fontSize = 22.sp,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
-            )
-        }
-    }
-}
-
-@Composable
 fun functionCard(firstText : String, secondText: String) {
-    Card(modifier = Modifier.height(60.dp).fillMaxWidth()
+    Card(modifier = Modifier.height(80.dp).fillMaxWidth()
         .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
