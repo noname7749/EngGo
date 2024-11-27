@@ -2,7 +2,7 @@ package com.example.enggo.model
 
 import com.example.enggo.utils.generateId
 
-class UserData(
+data class UserData(
     var username: String,
     var password: String,
     var email: String,
