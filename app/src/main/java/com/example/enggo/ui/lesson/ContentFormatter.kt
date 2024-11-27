@@ -1,5 +1,6 @@
 package com.example.enggo.ui.lesson
 
+import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -35,7 +36,7 @@ typealias SymbolAnnotation = Pair<AnnotatedString, StringAnnotation?>
 
 /**
  * Format a message following Markdown-lite syntax
- * | @username -> bold, primary color and clickable element
+ * | @title@ -> bold + italic
  * | http(s)://... -> clickable link, opening it into the browser
  * | *bold* -> bold
  * | _italic_ -> italic
