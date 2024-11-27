@@ -1,5 +1,6 @@
 package com.example.enggo.ui.unit
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,83 +54,105 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
+import com.example.enggo.data.service.UnitDataService
 import com.example.enggo.model.course.Lesson
 import com.example.enggo.model.course.UnitData
 import com.example.enggo.ui.course.CourseListRow
 import com.example.enggo.ui.course.CoursesTopAppBar
 import com.example.enggo.ui.course.LevelTitles
 import com.example.enggo.ui.theme.EngGoTheme
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.forEach
 
 @Composable
 internal fun UnitListRoute(
-    courseId: Int?,
+    courseId: Int,
     onBackPress: () -> Unit,
     onLessonPressed: (Int) -> Unit
 ) {
     // TODO()
     //val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
-    UnitListScreen(courseId = courseId)
+    UnitListScreen(courseId = courseId, onLessonPressed = onLessonPressed)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitListScreen(
-    courseId: Int?,
+    courseId: Int,
+    onLessonPressed: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     val sampleUnitData = listOf(
         UnitData(
-            unitId = 1,
-            unitName = "Music",
-            lesson = listOf(
-                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
-                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
-                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            course_id = 1,
+            unit_id = 1,
+            unit_name = "Music",
+            lessons = listOf(
+                Lesson(unit_id = 1, lesson_id = 1, has_theory = true, has_exercise = true, lesson_name = "Grammar"),
+                Lesson(unit_id = 1, lesson_id = 2, has_theory = true, has_exercise = false, lesson_name = "Listening"),
+                Lesson(unit_id = 1, lesson_id = 3, has_theory = false, has_exercise = true, lesson_name = "Reading")
             )
         ),
         UnitData(
-            unitId = 2,
-            unitName = "Music",
-            lesson = listOf(
-                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
-                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
-                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            course_id = 1,
+            unit_id = 2,
+            unit_name = "Music",
+            lessons = listOf(
+                Lesson(unit_id = 2, lesson_id = 1, has_theory = true, has_exercise = true, lesson_name = "Grammar"),
+                Lesson(unit_id = 2, lesson_id = 2, has_theory = true, has_exercise = false, lesson_name = "Listening"),
+                Lesson(unit_id = 2, lesson_id = 3, has_theory = false, has_exercise = true, lesson_name = "Reading")
             )
         ),
         UnitData(
-            unitId = 1,
-            unitName = "Music",
-            lesson = listOf(
-                Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
-                Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
-                Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+            course_id = 1,
+            unit_id = 3,
+            unit_name = "Music",
+            lessons = listOf(
+                Lesson(unit_id = 3, lesson_id = 1, has_theory = true, has_exercise = true, lesson_name = "Grammar"),
+                Lesson(unit_id = 3, lesson_id = 2, has_theory = true, has_exercise = false, lesson_name = "Listening"),
+                Lesson(unit_id = 3, lesson_id = 3, has_theory = false, has_exercise = true, lesson_name = "Reading")
             )
         )
     )
 
+    val unitDataService = UnitDataService(FirebaseFirestore.getInstance())
+    val unitListViewModel : UnitListViewModel = viewModel(factory = UnitDataViewModelFactory(unitDataService, courseId))
+
     val topBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
+
+    val units by unitListViewModel.units.collectAsState()
+    Log.d("UNITLIST", units.toString())
+
     Scaffold(
         topBar = {
             UnitListTopAppBar(courseId = courseId)
         },
-        contentWindowInsets = ScaffoldDefaults
-            .contentWindowInsets
-            .exclude(WindowInsets.navigationBars)
-            .exclude(WindowInsets.ime),
-        modifier = modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
+//        contentWindowInsets = ScaffoldDefaults
+//            .contentWindowInsets
+//            .exclude(WindowInsets.navigationBars)
+//            .exclude(WindowInsets.ime),
+//        modifier = modifier
+//            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues),
-                //.verticalScroll(rememberScrollState()),
+            modifier = Modifier.padding(paddingValues)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
         ) {
-            sampleUnitData.forEach{unitData ->
+//            sampleUnitData.forEach{unitData ->
+//                UnitItemList(
+//                    unitData = unitData,
+//                    modifier = Modifier.padding(horizontal = 16.dp)
+//                )
+//            }
+            units.forEach { unitData ->
                 UnitItemList(
                     unitData = unitData,
+                    onLessonPressed = onLessonPressed,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
@@ -159,6 +184,7 @@ fun UnitListTopAppBar(
 @Composable
 fun UnitItemList(
     unitData: UnitData,
+    onLessonPressed: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -188,7 +214,7 @@ fun UnitItemList(
                     .padding(dimensionResource(R.dimen.padding_small))
             ) {
                 Text(
-                    text = unitData.unitName,
+                    text = unitData.unit_name,
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(Modifier.weight(1f))
@@ -201,8 +227,8 @@ fun UnitItemList(
             if (expanded) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small)))
                 LessonList(
-                    lessonList = unitData.lesson,
-                    onItemClick = {}, // TODO
+                    lessonList = unitData.lessons,
+                    onItemClick = onLessonPressed, // TODO
                     modifier = Modifier.padding(
                         start = dimensionResource(R.dimen.padding_medium),
                         top = dimensionResource(R.dimen.padding_small),
@@ -218,14 +244,14 @@ fun UnitItemList(
 @Composable
 fun LessonList(
     lessonList: List<Lesson>,
-    onItemClick: (Lesson) -> Unit,
+    onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn {
-        itemsIndexed(lessonList) { index, lesson ->
+    Column(modifier = modifier) {
+        lessonList.forEachIndexed { index, lesson ->
             LessonItemList(
                 lesson = lesson,
-                onItemClick = { onItemClick(lesson) }
+                onItemClick = { onItemClick(lesson.lesson_id) }
             )
             if (index != lessonList.size - 1) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small)))
@@ -263,7 +289,7 @@ fun LessonItemList(
                     .padding(dimensionResource(R.dimen.padding_small))
             ) {
                 Text(
-                    text = lesson.lessonName,
+                    text = lesson.lesson_name,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                     style = MaterialTheme.typography.titleMedium,
@@ -271,8 +297,8 @@ fun LessonItemList(
                 )
                 Spacer(Modifier.weight(1f))
                 val text = when {
-                    lesson.hasTheory && lesson.hasExercise -> "Theory | Exercise"
-                    lesson.hasTheory -> "Theory"
+                    lesson.has_theory && lesson.has_exercise -> "Theory | Exercise"
+                    lesson.has_theory -> "Theory"
                     else -> "Exercise"
                 }
                 Text(
@@ -295,18 +321,20 @@ fun LessonItemList(
 @Composable
 fun UnitItemListPreview() {
     val sampleUnitData = UnitData(
-        unitId = 1,
-        unitName = "Music",
-        lesson = listOf(
-            Lesson(lessonId = 1, hasTheory = true, hasExercise = true, lessonName = "Grammar"),
-            Lesson(lessonId = 2, hasTheory = true, hasExercise = false, lessonName = "Listening"),
-            Lesson(lessonId = 3, hasTheory = false, hasExercise = true, lessonName = "Reading")
+        course_id = 1,
+        unit_id = 1,
+        unit_name = "Music",
+        lessons = listOf(
+            Lesson(unit_id = 1, lesson_id = 1, has_theory = true, has_exercise = true, lesson_name = "Grammar"),
+            Lesson(unit_id = 1, lesson_id = 2, has_theory = true, has_exercise = false, lesson_name = "Listening"),
+            Lesson(unit_id = 1, lesson_id = 3, has_theory = false, has_exercise = true, lesson_name = "Reading")
         )
     )
     EngGoTheme {
         Surface {
             UnitItemList(
-                unitData = sampleUnitData
+                unitData = sampleUnitData,
+                onLessonPressed = {}
             )
         }
     }
@@ -316,10 +344,11 @@ fun UnitItemListPreview() {
 @Composable
 fun LessonItemListPreview() {
     val sampleLesson = Lesson(
-        lessonId = 1,
-        hasTheory = true,
-        hasExercise = true,
-        lessonName = "Grammar - Present simple"
+        unit_id = 1,
+        lesson_id = 1,
+        has_theory = true,
+        has_exercise = true,
+        lesson_name = "Grammar - Present simple"
     )
     EngGoTheme {
         Surface {
@@ -336,7 +365,7 @@ fun LessonItemListPreview() {
 fun UnitListScreenPreview() {
     EngGoTheme {
         Surface() {
-            UnitListScreen(5)
+            UnitListScreen(5, {})
         }
     }
 }

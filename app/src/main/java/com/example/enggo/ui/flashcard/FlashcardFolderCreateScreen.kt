@@ -1,5 +1,6 @@
 package com.example.enggo.ui.flashcard
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,14 +32,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.enggo.R
+import com.example.enggo.model.Flashcard
 import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.model.termCreate
 import com.example.enggo.ui.theme.EngGoTheme
+import com.google.firebase.*
+import com.google.firebase.firestore.firestore
+
+private val fcCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
 fun createFCFolderScreen(fcFolder : FlashcardFolder) {
     var terms = remember { mutableStateListOf<String>() }
     var defs = remember { mutableStateListOf<String>() }
+    var id by remember { mutableStateOf(0) }
     var removeIndexAt by remember { mutableStateOf(0) }
     var FolderName by remember { mutableStateOf("Folder name") }
 
@@ -96,7 +103,21 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                     .padding(top = 10.dp, bottom = 10.dp, end = 10.dp)
                     .border(1.dp, Color.Black)
                     .clickable {
-                        //Done
+                        //TODO
+                        var f : FlashcardFolder = FlashcardFolder(FolderName)
+                        for (i in 0..terms.size - 1) {
+                            if (terms[i].equals("") or defs[i].equals(""))
+                                continue
+                            f.addFlashcard(Flashcard(terms[i], defs[i]))
+                        }
+                        fcCollectionRef
+                            .get()
+                            .addOnSuccessListener { document ->
+                                id = document.count() + 1
+                                //Log.d("Test count 1", id.toString())
+                                fcCollectionRef.document(id.toString()).set(f)
+                            }
+                        //Leave here
                     }
             ) {
                 Text(
