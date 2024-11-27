@@ -6,6 +6,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import com.example.enggo.data.DefaultAppContainer
 import com.example.enggo.ui.course.navigation.coursesScreen
+import com.example.enggo.ui.dictionary.navigation.DICTIONARY_ROUTE
+import com.example.enggo.ui.dictionary.navigation.bookmarkScreen
 import com.example.enggo.ui.dictionary.navigation.dictionaryScreen
 import com.example.enggo.ui.unit.navigation.navigateToUnitList
 import com.example.enggo.ui.unit.navigation.unitListScreen
@@ -41,6 +43,15 @@ fun AppNavHost(
         lessonScreen (onBackPressed = navController::popBackStack)
         registerScreen (onRegisterClick = navController::navigateToLogin, redirectToLogin = navController::navigateToLogin)
         loginScreen (onLoginClick = navController::navigateToHome , redirectToRegister = navController::navigateToRegister)
-        dictionaryScreen(appContainer)
+        dictionaryScreen(appContainer, navController)
+
+        bookmarkScreen(
+            onItemClick = { wordIndex ->
+                navController.navigate("$DICTIONARY_ROUTE?wordIndex=$wordIndex")
+            },
+            onBackToDictionary = {
+                navController.navigate(DICTIONARY_ROUTE)
+            }
+        )
     }
 }

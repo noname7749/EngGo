@@ -4,22 +4,26 @@ import com.google.gson.annotations.SerializedName
 
 data class Meaning(
     @SerializedName("def")
-    val def: String,
+    val def: String = "",
 
     @SerializedName("example")
-    val example: String?,
+    val example: String? = null,
 
     @SerializedName("speech_part")
-    val speechPart: String,
+    val speechPart: String = "",
 
     @SerializedName("synonyms")
-    val synonyms: List<String>?,
+    val synonyms: List<String>? = null,
 
     @SerializedName("labels")
-    val labels: List<Label>?,
-)
+    val labels: List<Label>? = null,
+) {
+    constructor() : this("", null, "", null, null)
+}
 
 data class Label(
     @SerializedName("name")
-    val name: String,
-)
+    val name: String = "",
+){
+    constructor() : this("")
+}
