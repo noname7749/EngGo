@@ -21,15 +21,15 @@ import androidx.compose.ui.unit.sp
 import com.example.enggo.ui.theme.EngGoTheme
 
 @Composable
-fun libraryScreen(modifier: Modifier = Modifier) {
+fun FlashcardHomeScreen(modifier: Modifier = Modifier) {
 
     var filterText by remember { mutableStateOf("Enter Filter") }
 
     Column(modifier = modifier) {
         Text(
-            text = "FlashcardFolder",
-            fontSize = 60.sp,
-            modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)
+            text = "Folder",
+            fontSize = 40.sp,
+            modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 16.dp)
         )
 
         TextField(
@@ -37,7 +37,7 @@ fun libraryScreen(modifier: Modifier = Modifier) {
             onValueChange = { filterText = it },
             label = { Text("Filter") },
             modifier = Modifier.fillMaxWidth()
-                .padding(start = 16.dp, bottom = 40.dp, end = 5.dp)
+                .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
         )
 
         FolderList()
@@ -85,7 +85,7 @@ fun FLashcardFolder(name: String, numOfItems: Int, modifier: Modifier = Modifier
 @Composable
 fun LibraryScreenReview() {
     EngGoTheme {
-        libraryScreen(Modifier.fillMaxSize())
+        FlashcardHomeScreen(Modifier.fillMaxSize())
     }
 }
 
