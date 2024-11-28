@@ -6,6 +6,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import com.example.enggo.data.DefaultAppContainer
 import com.example.enggo.ui.course.navigation.coursesScreen
+import com.example.enggo.ui.dictionary.navigation.DICTIONARY_ROUTE
+import com.example.enggo.ui.dictionary.navigation.bookmarkScreen
 import com.example.enggo.ui.course.navigation.navigateToCourses
 import com.example.enggo.ui.dictionary.navigation.dictionaryScreen
 import com.example.enggo.ui.unit.navigation.navigateToUnitList
@@ -56,7 +58,16 @@ fun AppNavHost(
         exerciseScreens(onBackPressed = navController::navigateToCourses, onNextExercisePressed = navController::navigateToExerciseScreen) // TODO: backPressed
         registerScreen (onRegisterClick = navController::navigateToLogin, redirectToLogin = navController::navigateToLogin)
         loginScreen (onLoginClick = navController::navigateToHome , redirectToRegister = navController::navigateToRegister)
-        dictionaryScreen(appContainer)
+        dictionaryScreen(appContainer, navController)
+
+        bookmarkScreen(
+            onItemClick = { wordIndex ->
+                navController.navigate("$DICTIONARY_ROUTE?wordIndex=$wordIndex")
+            },
+            onBackToDictionary = {
+                navController.navigate(DICTIONARY_ROUTE)
+            }
+        )
         AccountManagementScreen (onPasswordChangeClick = navController::navigateToPasswordChange, onBackClick = navController::navigateToProfile, onLogoutClick = navController::navigateToLogin)
         ChangePasswordScreen (onBackClick = navController::navigateToProfileAccount)
         profileScreen (onLogoutClick = navController::navigateToLogin, onClickProfile = navController::navigateToProfileView, onClickAccount = navController::navigateToProfileAccount)
