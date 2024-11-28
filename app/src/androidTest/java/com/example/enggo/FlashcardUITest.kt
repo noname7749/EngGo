@@ -15,11 +15,11 @@ class FlashcardUITest {
     @Test
     fun testFlashcardToggleUI() {
         // Tạo một flashcard
-        val flashcard = Flashcard().apply { Flashcard("Hello", "Xin chào") }
+        val flashcard = Flashcard("Hello", "Xin chào")  // Khởi tạo flashcard đúng cách
 
         // Set nội dung giao diện để test
         composeTestRule.setContent {
-            flashcard.flashCardView()
+            flashcard.flashCardView()  // Đảm bảo phương thức này đã được định nghĩa trong Flashcard
         }
 
         // Kiểm tra hiển thị mặt đầu tiên
@@ -35,11 +35,11 @@ class FlashcardUITest {
     @Test
     fun testTwoSideFlashcardView() {
         // Tạo một flashcard
-        val flashcard = Flashcard().apply { Flashcard("Duck", "Vịt") }
+        val flashcard = Flashcard("Duck", "Vịt")  // Khởi tạo flashcard đúng cách
 
         // Set nội dung giao diện để test
         composeTestRule.setContent {
-            flashcard.TwoSideFlashCardView()
+            flashcard.TwoSideFlashCardView()  // Đảm bảo phương thức này đã được định nghĩa trong Flashcard
         }
 
         // Kiểm tra hiển thị cả hai mặt

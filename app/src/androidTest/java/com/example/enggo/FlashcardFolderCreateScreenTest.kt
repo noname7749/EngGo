@@ -1,7 +1,5 @@
 package com.example.enggo
 
-import com.example.enggo.ui.flashcard.createFCFolderScreen
-
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.*
 import com.example.enggo.model.FlashcardFolder
