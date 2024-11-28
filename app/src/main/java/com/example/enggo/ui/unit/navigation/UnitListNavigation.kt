@@ -23,7 +23,7 @@ fun NavGraphBuilder.unitListScreen(
     onLessonPressed: (Int) -> Unit,
 ) {
     composable(UNIT_LIST_ROUTE) { backStackEntry ->
-        val courseId = backStackEntry.arguments?.getString("courseId")?.toIntOrNull() // Chuyển đổi String thành Int
+        val courseId = backStackEntry.arguments?.getString("courseId")?.toIntOrNull() // String to Int
         if (courseId != null) {
             UnitListRoute(
                 courseId = courseId,
@@ -31,7 +31,7 @@ fun NavGraphBuilder.unitListScreen(
                 onLessonPressed = onLessonPressed
             )
         } else {
-            Log.e("Navigation", "courseId is null or invalid") // Log nếu courseId không hợp lệ
+            Log.e("Navigation", "courseId is null or invalid")
         }
     }
 }
