@@ -1,29 +1,65 @@
 package com.example.enggo.ui.flashcard
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.ui.theme.EngGoTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.getField
+import com.google.firebase.firestore.toObject
+
+private val fcCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
 fun FlashcardHomeScreen(modifier: Modifier = Modifier) {
-
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val idUser: String? = sharedPref.getString("currentUserId", null)
+    var names = remember { mutableStateListOf<String>() }
+    var nums = remember { mutableStateListOf<Int>() }
     var filterText by remember { mutableStateOf("Enter Filter") }
+    var init by remember {mutableStateOf(0)}
+
+    if (init == 0) {
+        init = 1
+        fcCollectionRef
+            .whereEqualTo("userId", idUser)
+            .get()
+            .addOnSuccessListener { documents->
+                for (document in documents) {
+                    var name : String? = document.getString("name")
+                    if (name.equals(null))
+                        name = ""
+                    names.add(name.toString())
+                    var num = document.get("flashcardNumber")
+                    num = num.toString()
+                    nums.add(num.toInt())
+                }
+                Log.d("Firebase", "get document success")
+            }
+    }
 
     Column(modifier = modifier) {
         Text(
@@ -40,25 +76,17 @@ fun FlashcardHomeScreen(modifier: Modifier = Modifier) {
                 .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
         )
 
-        FolderList()
-
-    }
-}
-
-
-@Composable
-fun FolderList() {
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        item {
-            FLashcardFolder(name = "Flashcard 1", numOfItems = 10)
-            FLashcardFolder(name = "Flashcard 2", numOfItems = 12)
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            itemsIndexed(names) { index, item ->
+                FlashcardView(names[index], nums[index])
+            }
         }
+
     }
 }
 
-
 @Composable
-fun FLashcardFolder(name: String, numOfItems: Int, modifier: Modifier = Modifier) {
+fun FlashcardView(name: String, numOfItems: Int, modifier: Modifier = Modifier) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.example.enggo.ui.flashcard
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,6 +50,9 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
     var id by remember { mutableStateOf(0) }
     var removeIndexAt by remember { mutableStateOf(0) }
     var FolderName by remember { mutableStateOf("Folder name") }
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val idUser: String? = sharedPref.getString("currentUserId", null)
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -104,12 +109,13 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                     .border(1.dp, Color.Black)
                     .clickable {
                         //TODO
-                        var f : FlashcardFolder = FlashcardFolder(FolderName)
+                        var f : FlashcardFolder = FlashcardFolder(name = FolderName, userId = idUser)
                         for (i in 0..terms.size - 1) {
                             if (terms[i].equals("") or defs[i].equals(""))
                                 continue
                             f.addFlashcard(Flashcard(terms[i], defs[i]))
                         }
+
                         fcCollectionRef
                             .get()
                             .addOnSuccessListener { document ->
