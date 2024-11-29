@@ -54,7 +54,7 @@ fun AppNavHost(
         unitListScreen(onBackPressed = navController::popBackStack, onLessonPressed = navController::navigateToLesson)
         lessonScreen(
             onBackPressed = navController::popBackStack,
-            onGoToExercise = { lessonId -> navController.navigateToExerciseScreen(lessonId, 0) } // first exercise
+            onGoToExercise = { lessonId, lessonName -> navController.navigateToExerciseScreen(lessonId, lessonName, 0) } // first exercise
         )
         exerciseScreens(onBackPressed = navController::navigateToCourses, onNextExercisePressed = navController::navigateToExerciseScreen) // TODO: backPressed
         registerScreen (onRegisterClick = navController::navigateToLogin, redirectToLogin = navController::navigateToLogin)

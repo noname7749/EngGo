@@ -13,7 +13,7 @@ fun NavController.navigateToCourses(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.coursesScreen(
-    onCourseClick: (Int) -> Unit,
+    onCourseClick: (Int, String) -> Unit,
 ) {
     composable(COURSES_ROUTE) {
         CourseRoute(onCourseClick)
