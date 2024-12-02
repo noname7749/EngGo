@@ -64,6 +64,7 @@ fun NavGraphBuilder.lessonScreen(
 fun NavGraphBuilder.exerciseScreens(
     onBackPressed: () -> Unit,
     onNextExercisePressed: (Int, String, Int) -> Unit,
+    navController: NavController
 ) {
     composable(EXERCISE_ROUTE) { backStackEntry ->
         val lessonId = backStackEntry.arguments?.getString("lessonId")?.toIntOrNull()
@@ -78,7 +79,8 @@ fun NavGraphBuilder.exerciseScreens(
                 exerciseIndex = exerciseIndex,
                 onBackPress = onBackPressed,
                 onNextLessonPress = onNextExercisePressed,
-                onUnitPress = {}
+                onUnitPress = {},
+                navController = navController
             )
         } else {
             Log.e("Navigation", "lessonId or exerciseIndex orr lessonName is null or invalid")

@@ -6,7 +6,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.example.enggo.ui.course.CourseRoute
 
-const val COURSES_ROUTE = "course"
+const val COURSES_ROUTE = "courses"
 
 fun NavController.navigateToCourses(navOptions: NavOptions? = null) {
     navigate(COURSES_ROUTE, navOptions)

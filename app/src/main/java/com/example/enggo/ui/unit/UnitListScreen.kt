@@ -24,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -32,6 +33,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -41,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,7 +78,7 @@ internal fun UnitListRoute(
 ) {
     // TODO()
     //val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
-    UnitListScreen(courseId = courseId, courseName = courseName, onLessonPressed = onLessonPressed)
+    UnitListScreen(courseId = courseId, courseName = courseName, onBackPress = onBackPress, onLessonPressed = onLessonPressed)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +87,7 @@ fun UnitListScreen(
     courseId: Int,
     courseName: String?,
     onLessonPressed: (Int, String) -> Unit,
+    onBackPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -126,13 +130,18 @@ fun UnitListScreen(
     val topBarState = rememberTopAppBarState()
 
     val units by unitListViewModel.units.collectAsState()
-    if (courseName != null) {
-        Log.d("COURSE NAME", courseName)
-    } else Log.d("COURSE NAME", "NULL?")
+    LaunchedEffect(courseId) {
+        unitListViewModel.fetchUnits(courseId)
+    }
+
+    Log.d("UNITS", units.toString())
 
     Scaffold(
         topBar = {
-            UnitListTopAppBar(courseName = courseName)
+            UnitListTopAppBar(
+                courseName = courseName,
+                onBackPress = onBackPress
+            )
         },
     ) { paddingValues ->
         Column(
@@ -156,6 +165,7 @@ fun UnitListScreen(
 @Composable
 fun UnitListTopAppBar(
     courseName: String?,
+    onBackPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -169,6 +179,14 @@ fun UnitListTopAppBar(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
+                )
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = { onBackPress() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack, //TODO: check
+                    contentDescription = "Back"
                 )
             }
         },

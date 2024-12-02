@@ -43,6 +43,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.enggo.R
 import com.example.enggo.data.service.ExerciseService
 import com.example.enggo.data.service.TheoryService
@@ -52,6 +53,8 @@ import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -156,6 +159,7 @@ internal fun ExerciseRoute(
     onBackPress: () -> Unit,
     onNextLessonPress: (Int, String, Int) -> Unit,
     onUnitPress: () -> Unit,
+    navController: NavController
 ) {
     Scaffold(
         topBar = {
@@ -163,7 +167,15 @@ internal fun ExerciseRoute(
         },
     ) { paddingValues ->
         if (lessonName != null) {
-            ExerciseScreen(lessonName = lessonName, lessonId = lessonId, exerciseIndex = exerciseIndex, onBackPress = onBackPress, onNextLessonPress = onNextLessonPress, onUnitPress = onUnitPress, modifier = Modifier.padding(paddingValues))
+            ExerciseScreen(
+                lessonName = lessonName,
+                lessonId = lessonId,
+                exerciseIndex = exerciseIndex,
+                onBackPress = onBackPress,
+                onNextLessonPress = onNextLessonPress,
+                onUnitPress = onUnitPress,
+                navController = navController,
+                modifier = Modifier.padding(paddingValues))
         }
     }
 }
@@ -176,7 +188,8 @@ fun ExerciseScreen(
     onBackPress: () -> Unit,
     onNextLessonPress: (Int, String, Int) -> Unit,
     onUnitPress: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     val exerciseService = ExerciseService(FirebaseFirestore.getInstance())
     val lessonViewModel : LessonViewModel = viewModel(factory = LessonViewModelFactory(exerciseService, lessonId))
@@ -277,13 +290,16 @@ fun ExerciseScreen(
             } else {
                 Button(
                     onClick = {
-                        onBackPress()
-                        // TODO  Back to unit screen or something
+                        val encodedLessonName = URLEncoder.encode(lessonName, StandardCharsets.UTF_8.toString())
+                        //onBackPress()
+                        navController.navigate("lesson/$encodedLessonName/$lessonId") {
+                            popUpTo("lesson/$encodedLessonName/$lessonId") { inclusive = true }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = dimensionResource(R.dimen.padding_small))
                 ) {
                     Text(
-                        text = "Finish and go back to Course",
+                        text = "Finish and go back to theory",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }

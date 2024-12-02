@@ -13,8 +13,9 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.homeScreen(
+    onRecentCourseClick: (Int, String) -> Unit,
 ) {
     composable(HOME_ROUTE) {
-        HomeRoute()
+        HomeRoute(onRecentCourseClick = onRecentCourseClick)
     }
 }

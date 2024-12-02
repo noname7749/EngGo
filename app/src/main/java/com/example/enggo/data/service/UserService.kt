@@ -4,9 +4,11 @@ import android.util.Log
 import com.example.enggo.data.repository.UserRepository
 import com.example.enggo.model.ProfileData
 import com.example.enggo.model.UserData
+import com.example.enggo.model.course.Course
 import com.example.enggo.model.dictionary.WordModel
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 class UserService(private val firestore: FirebaseFirestore): UserRepository {
     override suspend fun addUserData(userData: UserData): String? {
@@ -276,5 +278,79 @@ class UserService(private val firestore: FirebaseFirestore): UserRepository {
     override suspend fun removeBookmark(userId: String, wordsetId: String) {
         firestore.collection("users").document(userId)
             .collection("bookmarks").document(wordsetId).delete().await()
+    }
+
+    override suspend fun addRecentCourses(userId: String, course: Course): Boolean {
+        val courseMap = mapOf(
+            "course_id" to course.course_id,
+            "timestamp" to Date()
+        )
+
+        return try {
+            firestore.collection("users")
+                .document(userId)
+                .collection("recent_courses")
+                .document(course.course_id.toString())
+                .set(courseMap)
+                .await()
+            Log.d("FIRESTORE", "Adding recent course successfully: ${course.course_name}")
+            true
+        } catch (e: Exception) {
+            Log.e("FIRESTORE ERROR", "Error adding course: ", e)
+            false
+        }
+    }
+
+    override suspend fun isCourseExistInRecent(userId: String, courseId: Int): Boolean {
+        return try {
+            val documentSnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("recent_courses")
+                .document(courseId.toString())
+                .get()
+                .await()
+
+            // If exists, return true
+            documentSnapshot.exists()
+        } catch (e: Exception) {
+            Log.e("FIRESTORE ERROR", "Error checking course existence: ", e)
+            false
+        }
+    }
+
+    override suspend fun updateCourseTimestamp(userId: String, courseId: Int): Boolean {
+        val timestampMap = mapOf(
+            "timestamp" to Date()
+        )
+
+        return try {
+            firestore.collection("users").document(userId)
+                .collection("recent_courses").document(courseId.toString())
+                .update(timestampMap)
+                .await()
+            Log.d("FIRESTORE", "Updated timestamp for course $courseId successfully")
+            true
+        } catch (e: Exception) {
+            Log.e("FIRESTORE ERROR", "Error updating timestamp: ", e)
+            false
+        }
+    }
+
+    override suspend fun getRecentCourses(userId: String): List<Map<String, Any>> {
+        return try {
+            val querySnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("recent_courses")
+                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            querySnapshot.documents.map { document ->
+                document.data ?: emptyMap()
+            }
+        } catch (e: Exception) {
+            Log.e("FIRESTORE ERROR", "Error fetching recent courses: ", e)
+            emptyList()
+        }
     }
 }

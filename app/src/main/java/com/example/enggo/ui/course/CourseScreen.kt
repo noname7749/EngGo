@@ -1,5 +1,6 @@
 package com.example.enggo.ui.course
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +35,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
 import com.example.enggo.data.service.CourseService
+import com.example.enggo.data.service.UserService
 import com.example.enggo.model.course.Course
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.firestore.FirebaseFirestore
@@ -76,14 +80,28 @@ internal fun CourseRoute(
     onCourseClick: (Int, String) -> Unit,
 ) {
     // TODO()
-    //val courseViewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val courseService = CourseService(FirebaseFirestore.getInstance())
-    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModelFactory(courseService))
+    val userService = UserService(FirebaseFirestore.getInstance())
+
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val currentUserId = sharedPref.getString("currentUserId", "") ?: ""
+    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModelFactory(courseService, userService))
+
+    val onItemClick: (Int, String) -> Unit = { courseId, courseName ->
+        onCourseClick(courseId, courseName)
+
+        currentUserId.let {
+            val course = Course(course_id = courseId, course_name = courseName, course_description = "")
+            courseViewModel.checkAndUpdateRecentCourses(it, course)
+        }
+    }
 
     val unfilteredCourses by courseViewModel.courses.collectAsState()
 
     CourseScreen(
-        onCourseClick = onCourseClick,
+        //onCourseClick = onCourseClick,
+        onCourseClick = onItemClick,
         unfilteredCoursesList = unfilteredCourses
     )
 }
@@ -95,9 +113,6 @@ fun CourseScreen(
     modifier: Modifier = Modifier,
 ) {
     // TODO()
-
-    //val courseUiState by viewModel.courseUiState.collectAsState()
-
 
     val groupedCourses = unfilteredCoursesList.groupBy { it.course_level }
 
