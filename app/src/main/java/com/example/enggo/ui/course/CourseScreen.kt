@@ -1,5 +1,7 @@
 package com.example.enggo.ui.course
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,9 +35,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
 import com.example.enggo.data.service.CourseService
+import com.example.enggo.data.service.UserService
 import com.example.enggo.model.course.Course
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.firestore.FirebaseFirestore
@@ -72,33 +77,42 @@ enum class LevelTitles(val level: Int, val title: String) {
 
 @Composable
 internal fun CourseRoute(
-    onCourseClick: (Int) -> Unit,
+    onCourseClick: (Int, String) -> Unit,
 ) {
     // TODO()
-    //val courseViewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val courseService = CourseService(FirebaseFirestore.getInstance())
-    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModelFactory(courseService))
+    val userService = UserService(FirebaseFirestore.getInstance())
+
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val currentUserId = sharedPref.getString("currentUserId", "") ?: ""
+    val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModelFactory(courseService, userService))
+
+    val onItemClick: (Int, String) -> Unit = { courseId, courseName ->
+        onCourseClick(courseId, courseName)
+
+        currentUserId.let {
+            val course = Course(course_id = courseId, course_name = courseName, course_description = "")
+            courseViewModel.checkAndUpdateRecentCourses(it, course)
+        }
+    }
 
     val unfilteredCourses by courseViewModel.courses.collectAsState()
 
     CourseScreen(
-        onCourseClick = onCourseClick,
-        unfilteredCoursesList = unfilteredCourses,
-        //courseUiState = courseViewModel.courseUiState
+        //onCourseClick = onCourseClick,
+        onCourseClick = onItemClick,
+        unfilteredCoursesList = unfilteredCourses
     )
 }
 
 @Composable
 fun CourseScreen(
-    onCourseClick: (Int) -> Unit,
-    //courseUiState: CourseUiState,
+    onCourseClick: (Int, String) -> Unit,
     unfilteredCoursesList: List<Course>,
     modifier: Modifier = Modifier,
 ) {
     // TODO()
-
-    //val courseUiState by viewModel.courseUiState.collectAsState()
-
 
     val groupedCourses = unfilteredCoursesList.groupBy { it.course_level }
 
@@ -152,7 +166,7 @@ fun CoursesTopAppBar(modifier: Modifier = Modifier) {
 @Composable
 fun CourseListRow(
     coursesList: List<Course>,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -168,7 +182,7 @@ fun CourseListRow(
     ) {
         items(coursesList, key = { course -> course.course_id }) { course ->
             CourseListItem(
-                courses = course,
+                course = course,
                 onItemClick = onItemClick,
                 modifier = Modifier
                     .fillParentMaxWidth()
@@ -190,23 +204,22 @@ fun CourseListRow(
 
 @Composable
 fun CourseListItem(
-    courses: Course,
-    onItemClick: (Int) -> Unit,
+    course: Course,
+    onItemClick: (Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    //Log.d("CourseListItem", "Course ID: ${courses.courseId}")
     Card(
         elevation = CardDefaults.cardElevation(),
         modifier = modifier,
         shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
-        onClick = { onItemClick(courses.course_id) }
+        onClick = { onItemClick(course.course_id, course.course_name) }
     ) {
         Row (
             modifier = Modifier.fillMaxWidth()
                 .size(128.dp) // TODO: create dimens value
         ){
             CourseListImageItem(
-                courseId = courses.course_id,
+                courseId = course.course_id,
                 modifier = Modifier.size(128.dp) // TODO: create dimens value
             )
             Column(
@@ -220,24 +233,24 @@ fun CourseListItem(
                     )
             ) {
                 Text(
-                    text = (courses.course_id.toString() + " " + courses.course_name),
+                    text = course.course_name,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp) // TODO: create dimens value
                 )
-                courses.course_description?.let { //TODO: check null
+                course.course_description.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                         overflow = TextOverflow.Ellipsis,
-                        maxLines = 3
+                        maxLines = 2
                     )
                 }
                 Spacer(Modifier.weight(1f))
                 Row (
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val levelTitle = LevelTitles.values().firstOrNull { it.level == courses.course_level }?.getShortTitle() ?: "Unknown"
+                    val levelTitle = LevelTitles.values().firstOrNull { it.level == course.course_level }?.getShortTitle() ?: "Unknown"
                     Text(
                         text = levelTitle,
                         style = MaterialTheme.typography.bodySmall
@@ -289,61 +302,3 @@ fun CourseListImageItem(
     }
 }
 
-
-
-@Preview
-@Composable
-fun CoursesRowPreview() {
-    val coursesList = listOf(
-        Course(course_id = 1, course_name = "Kotlin Programming", course_description = "Learn Kotlin from beginner to advanced level.", course_level = 1),
-        Course(course_id = 2, course_name = "Android Development", course_description = "Build Android apps using Kotlin.", course_level = 2),
-        Course(course_id = 3, course_name = "Machine Learning", course_description = "Introduction to Machine Learning concepts.", course_level = 3)
-    )
-    EngGoTheme {
-        Surface {
-            CourseListRow(
-                coursesList = coursesList,
-                onItemClick = {}
-            )
-        }
-    }
-
-}
-
-@Preview
-@Composable
-fun CoursesListItemPreview() {
-    val sampleCourse = Course(
-        course_id = 1,
-        course_name = "Kotlin Programming",
-        course_description = "Learn Kotlin from beginner to advanced level.",
-        course_level = 1
-    )
-    EngGoTheme {
-        Surface {
-            CourseListItem(
-                courses = sampleCourse,
-                onItemClick = {},
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun CourseScreenPreview() {
-    val coursesList = listOf(
-        Course(course_id = 1, course_name = "Kotlin Programming", course_description = "Learn Kotlin from beginner to advanced level.", course_level = 1),
-        Course(course_id = 2, course_name = "Android Development", course_description = "Build Android apps using Kotlin.", course_level = 2),
-        Course(course_id = 3, course_name = "Machine Learning", course_description = "Introduction to Machine Learning concepts.", course_level = 3)
-    )
-    EngGoTheme {
-        Surface {
-            CourseScreen(
-                onCourseClick = {},
-                unfilteredCoursesList = coursesList
-            )
-        }
-    }
-}

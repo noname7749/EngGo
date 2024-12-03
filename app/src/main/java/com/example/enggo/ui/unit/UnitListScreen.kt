@@ -24,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -32,6 +33,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -41,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,19 +72,22 @@ import kotlinx.coroutines.flow.forEach
 @Composable
 internal fun UnitListRoute(
     courseId: Int,
+    courseName: String?,
     onBackPress: () -> Unit,
-    onLessonPressed: (Int) -> Unit
+    onLessonPressed: (Int, String) -> Unit
 ) {
     // TODO()
     //val courseViewModel: CourseViewModel = viewModel(factory = CourseViewModel.Factory)
-    UnitListScreen(courseId = courseId, onLessonPressed = onLessonPressed)
+    UnitListScreen(courseId = courseId, courseName = courseName, onBackPress = onBackPress, onLessonPressed = onLessonPressed)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitListScreen(
     courseId: Int,
-    onLessonPressed: (Int) -> Unit,
+    courseName: String?,
+    onLessonPressed: (Int, String) -> Unit,
+    onBackPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -122,36 +128,31 @@ fun UnitListScreen(
     val unitListViewModel : UnitListViewModel = viewModel(factory = UnitDataViewModelFactory(unitDataService, courseId))
 
     val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
 
     val units by unitListViewModel.units.collectAsState()
-    Log.d("UNITLIST", units.toString())
+    LaunchedEffect(courseId) {
+        unitListViewModel.fetchUnits(courseId)
+    }
+
+    Log.d("UNITS", units.toString())
 
     Scaffold(
         topBar = {
-            UnitListTopAppBar(courseId = courseId)
+            UnitListTopAppBar(
+                courseName = courseName,
+                onBackPress = onBackPress
+            )
         },
-//        contentWindowInsets = ScaffoldDefaults
-//            .contentWindowInsets
-//            .exclude(WindowInsets.navigationBars)
-//            .exclude(WindowInsets.ime),
-//        modifier = modifier
-//            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
             modifier = Modifier.padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
         ) {
-//            sampleUnitData.forEach{unitData ->
-//                UnitItemList(
-//                    unitData = unitData,
-//                    modifier = Modifier.padding(horizontal = 16.dp)
-//                )
-//            }
-            units.forEach { unitData ->
+            units.forEachIndexed { index, unitData ->
                 UnitItemList(
                     unitData = unitData,
+                    index = index + 1,
                     onLessonPressed = onLessonPressed,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -163,7 +164,8 @@ fun UnitListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitListTopAppBar(
-    courseId: Int?,
+    courseName: String?,
+    onBackPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -172,8 +174,19 @@ fun UnitListTopAppBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = " COURSE WITH ID $courseId", // TODO
-                    style = MaterialTheme.typography.displaySmall
+                    text = courseName ?: "Unit List",
+                    style = MaterialTheme.typography.displaySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = { onBackPress() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack, //TODO: check
+                    contentDescription = "Back"
                 )
             }
         },
@@ -184,7 +197,8 @@ fun UnitListTopAppBar(
 @Composable
 fun UnitItemList(
     unitData: UnitData,
-    onLessonPressed: (Int) -> Unit,
+    index: Int,
+    onLessonPressed: (Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -214,7 +228,7 @@ fun UnitItemList(
                     .padding(dimensionResource(R.dimen.padding_small))
             ) {
                 Text(
-                    text = unitData.unit_name,
+                    text = if (unitData.unit_name == "") "Unit $index" else unitData.unit_name,
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(Modifier.weight(1f))
@@ -244,14 +258,14 @@ fun UnitItemList(
 @Composable
 fun LessonList(
     lessonList: List<Lesson>,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         lessonList.forEachIndexed { index, lesson ->
             LessonItemList(
                 lesson = lesson,
-                onItemClick = { onItemClick(lesson.lesson_id) }
+                onItemClick = { onItemClick(lesson.lesson_id, lesson.lesson_name) }
             )
             if (index != lessonList.size - 1) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small)))
@@ -316,30 +330,6 @@ fun LessonItemList(
     }
 }
 
-
-@Preview
-@Composable
-fun UnitItemListPreview() {
-    val sampleUnitData = UnitData(
-        course_id = 1,
-        unit_id = 1,
-        unit_name = "Music",
-        lessons = listOf(
-            Lesson(unit_id = 1, lesson_id = 1, has_theory = true, has_exercise = true, lesson_name = "Grammar"),
-            Lesson(unit_id = 1, lesson_id = 2, has_theory = true, has_exercise = false, lesson_name = "Listening"),
-            Lesson(unit_id = 1, lesson_id = 3, has_theory = false, has_exercise = true, lesson_name = "Reading")
-        )
-    )
-    EngGoTheme {
-        Surface {
-            UnitItemList(
-                unitData = sampleUnitData,
-                onLessonPressed = {}
-            )
-        }
-    }
-}
-
 @Preview
 @Composable
 fun LessonItemListPreview() {
@@ -356,16 +346,6 @@ fun LessonItemListPreview() {
                 lesson = sampleLesson,
                 onItemClick = {}
             )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun UnitListScreenPreview() {
-    EngGoTheme {
-        Surface() {
-            UnitListScreen(5, {})
         }
     }
 }

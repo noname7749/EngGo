@@ -49,14 +49,14 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
-        homeScreen()
+        homeScreen(onRecentCourseClick = navController::navigateToUnitList)
         coursesScreen(onCourseClick = navController::navigateToUnitList)
         unitListScreen(onBackPressed = navController::popBackStack, onLessonPressed = navController::navigateToLesson)
         lessonScreen(
             onBackPressed = navController::popBackStack,
-            onGoToExercise = { lessonId -> navController.navigateToExerciseScreen(lessonId, 0) } // first exercise
+            onGoToExercise = { lessonId, lessonName -> navController.navigateToExerciseScreen(lessonId, lessonName, 0) } // first exercise
         )
-        exerciseScreens(onBackPressed = navController::navigateToCourses, onNextExercisePressed = navController::navigateToExerciseScreen) // TODO: backPressed
+        exerciseScreens(onBackPressed = navController::navigateToCourses, onNextExercisePressed = navController::navigateToExerciseScreen, navController = navController) // TODO: backPressed
         registerScreen (onRegisterClick = navController::navigateToLogin, redirectToLogin = navController::navigateToLogin)
         loginScreen (onLoginClick = navController::navigateToHome , redirectToRegister = navController::navigateToRegister)
         dictionaryScreen(appContainer, navController)
@@ -73,6 +73,6 @@ fun AppNavHost(
         ChangePasswordScreen (onBackClick = navController::navigateToProfileAccount)
         profileScreen (onLogoutClick = navController::navigateToLogin, onClickProfile = navController::navigateToProfileView, onClickAccount = navController::navigateToProfileAccount)
         profileViewScreen (onBackClick = navController::navigateToProfile)
-        flashcardHome()
+        flashcardHome(navController)
     }
 }

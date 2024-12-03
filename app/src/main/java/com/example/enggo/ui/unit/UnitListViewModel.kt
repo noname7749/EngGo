@@ -20,10 +20,10 @@ class UnitListViewModel (
     private var unitListener: ListenerRegistration? = null
 
     init {
-        fetchUnits()
+        fetchUnits(courseId)
     }
 
-    private fun fetchUnits() {
+    fun fetchUnits(courseId: Int) {
         //unitListener?.remove()
         viewModelScope.launch {
             try {
