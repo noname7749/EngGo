@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -106,7 +108,7 @@ fun BookmarkScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { onBackToDictionary() },
-                        modifier = Modifier.padding(bottom = 16.dp)
+//                        modifier = Modifier.padding(bottom = 16.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
@@ -123,7 +125,7 @@ fun BookmarkScreen(
             .exclude(WindowInsets.navigationBars)
             .exclude(WindowInsets.ime),
         containerColor = MaterialTheme.colorScheme.background,
-        modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+//        modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
     ) { it ->
         Box(modifier = Modifier.fillMaxSize().padding(it)) {
             Column(
@@ -183,7 +185,7 @@ fun BookmarkItem(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
     ) {
         Row(
-            modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)),
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
@@ -233,12 +235,12 @@ fun BookmarkItem(
 
             IconButton(
                 onClick = { onDeleteClick(wordModel) },
-                modifier = Modifier.weight(.5f)
+                modifier = Modifier.size(dimensionResource(R.dimen.icon_image_size))
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.delete),
+                    imageVector = Icons.Default.Cancel,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }

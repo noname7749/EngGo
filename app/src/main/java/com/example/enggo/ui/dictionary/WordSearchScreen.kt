@@ -38,6 +38,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -172,7 +175,7 @@ fun WordSearchScreen(
             .exclude(WindowInsets.navigationBars)
             .exclude(WindowInsets.ime),
         containerColor = MaterialTheme.colorScheme.background,
-        modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+        modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))
     ) { it ->
         Column(
             modifier = Modifier.fillMaxWidth().padding(it)
@@ -183,10 +186,12 @@ fun WordSearchScreen(
             var wordModel = wordModelState
             val bookmarkWordState by bookmarkViewModel.bookmarks.collectAsState()
 
+            var selectedBookmarkWordModel by remember { mutableStateOf<WordState?>(null) }
+
             if (bookmarkWordState.isNotEmpty() && wordIndex != null && wordIndex != -1) {
                 val selectedBookmark = bookmarkWordState.getOrNull(wordIndex)
                 selectedBookmark?.let {
-                    wordModel = WordState(it)
+                    selectedBookmarkWordModel= WordState(it)
                 }
             }
 
@@ -195,14 +200,18 @@ fun WordSearchScreen(
                 onSearch = {
                     wordViewModel.prefixMatcher(it)
                     wordViewModel.searcher(it)
+                    selectedBookmarkWordModel = null
                 },
                 onClear = {
                     wordViewModel.clearSuggestions()
+                    selectedBookmarkWordModel = null
                 },
                 onDoneActionClick = {
                     keyboardController?.hide()
                 },
                 onItemClick = {
+                    selectedBookmarkWordModel = null
+                    wordViewModel.clearWordModel()
                     wordViewModel.searcher(it, true)
                     keyboardController?.hide()
                 },
@@ -213,22 +222,24 @@ fun WordSearchScreen(
                     )
                 }
             )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "Result",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            SearchContent(wordModel.wordModel, wordViewModel)
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
+
+            if (wordModel.wordModel != null || selectedBookmarkWordModel?.wordModel != null) {
+                SearchContent(
+                    searchWordModel = wordModel.wordModel,
+                    bookmarkWordModel = selectedBookmarkWordModel?.wordModel,
+                    wordViewModel = wordViewModel
+                )
+            }
         }
     }
 }
 
 @Composable
 fun SearchContent(
-    wordModel: WordModel?,
+//    wordModel: WordModel?,
+    searchWordModel: WordModel?,
+    bookmarkWordModel: WordModel?,
     wordViewModel: WordModelViewModel
 ) {
     Card(
@@ -236,9 +247,11 @@ fun SearchContent(
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
     ) {
+        val wordModel = searchWordModel?: bookmarkWordModel
 
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
+                .padding(dimensionResource(R.dimen.padding_medium))
         ) {
             if (wordModel != null) {
                 Text(
@@ -258,7 +271,7 @@ fun SearchContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (wordModel != null) {
-                    UtilButtons(wordViewModel)
+                    UtilButtons(wordViewModel, wordModel.word)
                 }
             }
 

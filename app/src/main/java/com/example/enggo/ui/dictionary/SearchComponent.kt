@@ -77,9 +77,8 @@ fun<T> SearchComponent(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(dimensionResource(R.dimen.padding_medium))
             .wrapContentHeight(),
-        elevation = CardDefaults.cardElevation(dimensionResource(R.dimen.padding_small)),
+//        elevation = CardDefaults.cardElevation(dimensionResource(R.dimen.padding_small)),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
     ) {
         TextField(

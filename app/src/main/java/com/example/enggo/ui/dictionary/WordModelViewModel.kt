@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class WordModelViewModel(
-    val dictRepository: DictionaryBaseRepository,
+    private val dictRepository: DictionaryBaseRepository,
     private val userService: UserService,
     private val currentUserId: String
 ) : ViewModel() {
@@ -32,7 +32,7 @@ class WordModelViewModel(
     var suggestions = MutableStateFlow(emptyList<String>())
         private set
 
-    var bookmarkStatus = MutableStateFlow<Boolean?>(null)
+    private var bookmarkStatus = MutableStateFlow<Boolean?>(null)
 
     private var searchJob: Job? = null
     private var prefixMatchJob: Job? = null
@@ -89,4 +89,9 @@ class WordModelViewModel(
             }
         }
     }
+
+    fun clearWordModel() {
+        wordState.value = WordState()
+    }
+
 }
