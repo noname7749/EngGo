@@ -73,6 +73,6 @@ fun AppNavHost(
         ChangePasswordScreen (onBackClick = navController::navigateToProfileAccount)
         profileScreen (onLogoutClick = navController::navigateToLogin, onClickProfile = navController::navigateToProfileView, onClickAccount = navController::navigateToProfileAccount)
         profileViewScreen (onBackClick = navController::navigateToProfile)
-        flashcardHome()
+        flashcardHome(navController)
     }
 }

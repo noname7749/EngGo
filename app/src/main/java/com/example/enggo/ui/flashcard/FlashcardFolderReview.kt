@@ -2,6 +2,7 @@ package com.example.enggo.ui.flashcard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -168,6 +170,36 @@ fun FlashcardFolderPreview() {
         t.addFlashcard(Flashcard("Pastoral Care", "Mục vụ (trách nhiệm chăm sóc và tư vấn được cung cấp bởi các nhà lãnh đạo tôn giáo)"))
         Surface(modifier = Modifier.fillMaxSize()) {
             FlashcardFolderView(fcFolder = t)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun QuickPreview() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End,
+        modifier = Modifier.fillMaxWidth()
+            .padding(start = 16.dp, top = 20.dp, bottom = 20.dp)
+    ) {
+
+        Text(
+            text = "Folder",
+            fontSize = 36.sp,
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Image(
+                painter = painterResource(R.drawable.plus_icon),
+                contentDescription = "Add Flashcard Button",
+                modifier = Modifier.size(36.dp)
+                    .padding(end = 16.dp)
+            )
         }
     }
 }

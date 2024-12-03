@@ -33,10 +33,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.enggo.R
 import com.example.enggo.model.Flashcard
 import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.model.termCreate
+import com.example.enggo.ui.flashcard.navigation.navigateToFlashcard
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.*
 import com.google.firebase.firestore.firestore
@@ -44,7 +46,9 @@ import com.google.firebase.firestore.firestore
 private val fcCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
-fun createFCFolderScreen(fcFolder : FlashcardFolder) {
+fun createFCFolderScreen(
+    navController: NavController
+) {
     var terms = remember { mutableStateListOf<String>() }
     var defs = remember { mutableStateListOf<String>() }
     var id by remember { mutableStateOf(0) }
@@ -124,6 +128,7 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
                                 fcCollectionRef.document(id.toString()).set(f)
                             }
                         //Leave here
+                        navController.navigateToFlashcard()
                     }
             ) {
                 Text(
@@ -198,9 +203,8 @@ fun createFCFolderScreen(fcFolder : FlashcardFolder) {
 @Composable
 fun createFCFolderPreview() {
     EngGoTheme {
-        var t : FlashcardFolder = FlashcardFolder("ABC")
         Surface(modifier = Modifier.fillMaxSize()) {
-            createFCFolderScreen(fcFolder = t)
+
         }
     }
 }
