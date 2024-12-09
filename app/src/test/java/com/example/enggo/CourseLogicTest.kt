@@ -5,6 +5,23 @@ import com.example.enggo.ui.course.navigation.navigateToCourses
 import com.example.enggo.ui.course.CourseViewModel
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Assert.*
+import org.junit.Before
+import com.example.enggo.ui.course.LevelTitles
+import com.example.enggo.model.course.Course
+import com.example.enggo.data.service.CourseService
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.mockito.Mockito.*
+import org.junit.Assert.*
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.mockito.Mock  // Thêm import này
+import org.mockito.Mockito.*
+import org.mockito.MockitoAnnotations
+import com.example.enggo.data.service.UserService
 
 class CourseLogicTest {
 
@@ -53,7 +70,7 @@ class CourseLogicTest {
     fun testLevelTitlesEnum6() {
         // Kiểm tra xem các giá trị của enum có đúng hay không
         val elementary = LevelTitles.ADVANCED
-        assertEquals(6,LevelTitles.ADVANCED.level)
+        assertEquals(6, LevelTitles.ADVANCED.level)
         assertEquals("Advanced Courses", elementary.title)
     }
 
@@ -68,20 +85,67 @@ class CourseLogicTest {
     @Test
     fun testOnItemClick() {
         val mockCourseId = 1
-        val mockCourseName = "Test Course"
         var clickedCourseId: Int? = null
-        var clickedCourseName: String? = null
 
-        val onItemClick: (Int, String) -> Unit = { courseId, courseName ->
+        val onItemClick: (Int) -> Unit = { courseId ->
             clickedCourseId = courseId
-            clickedCourseName = courseName
         }
 
-        onItemClick(mockCourseId, mockCourseName)
+        onItemClick(mockCourseId)
         assertEquals(mockCourseId, clickedCourseId)
-        assertEquals(mockCourseName, clickedCourseName)
     }
 
+    @Test
+    fun testCourseImageIndexCalculation() {
+        val courseId = 15
+        val imagesSize = 10
+        val expectedIndex = courseId % imagesSize
+        assertEquals(5, expectedIndex)
+    }
 
+    @Mock
+    private lateinit var courseService: CourseService
 
+    @Mock
+    private lateinit var userService: UserService
+
+    @Mock
+    private lateinit var firestore: FirebaseFirestore
+
+    @Mock
+    private lateinit var collectionReference: CollectionReference
+
+    private lateinit var viewModel: CourseViewModel
+
+    @Before
+    fun setup() {
+        MockitoAnnotations.openMocks(this)
+        `when`(courseService.getAllCourses()).thenReturn(collectionReference)
+        viewModel = CourseViewModel(courseService, userService)
+    }
+
+    @Test
+    fun testLevelTitlesEnumValues() {
+        val testCases = mapOf(
+            LevelTitles.ELEMENTARY to Pair(1, "Elementary Courses"),
+            LevelTitles.PRE_INTERMEDIATE to Pair(2, "Pre-Intermediate Courses"),
+            LevelTitles.INTERMEDIATE to Pair(3, "Intermediate Courses"),
+            LevelTitles.INTERMEDIATE_PLUS to Pair(4, "Intermediate Plus Courses"),
+            LevelTitles.UPPER_INTERMEDIATE to Pair(5, "Upper-Intermediate Courses"),
+            LevelTitles.ADVANCED to Pair(6, "Advanced Courses"),
+            LevelTitles.IELTS to Pair(7, "IELTS Courses")
+        )
+
+        testCases.forEach { (level, expected) ->
+            assertEquals(expected.first, level.level)
+            assertEquals(expected.second, level.title)
+        }
+    }
+
+    @Test
+    fun testInitialCoursesStateIsEmpty() = runBlocking {
+        val initialCourses = viewModel.courses.first()
+        assertTrue(initialCourses.isEmpty())
+    }
 }
+
