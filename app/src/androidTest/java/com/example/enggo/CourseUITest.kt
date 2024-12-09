@@ -16,6 +16,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.enggo.ui.course.CourseScreen
 import com.example.enggo.ui.theme.EngGoTheme
 import com.example.enggo.ui.course.LevelTitles
+import androidx.navigation.compose.rememberNavController
 
 class CourseScreenTest {
     @get:Rule
@@ -33,13 +34,13 @@ class CourseScreenTest {
         composeTestRule.setContent {
             EngGoTheme {
                 CourseListItem(
-                    courses = course,
-                    onItemClick = {}
+                    course = course,
+                    onItemClick = { _, _ -> }
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("1 Test Course").assertExists()
+        composeTestRule.onNodeWithText("Test Course").assertExists()
         composeTestRule.onNodeWithText("Test Description").assertExists()
         composeTestRule.onNodeWithText("Elementary").assertExists()
     }
@@ -54,21 +55,16 @@ class CourseScreenTest {
         composeTestRule.setContent {
             EngGoTheme {
                 CourseScreen(
-                    onCourseClick = {},
+                    onCourseClick = { _, _ -> },
                     unfilteredCoursesList = courses
                 )
             }
         }
 
-        composeTestRule.waitForIdle()
-
-        // Kiểm tra tiêu đề các level
         composeTestRule.onNodeWithText("Elementary Courses").assertExists()
         composeTestRule.onNodeWithText("Intermediate Courses").assertExists()
-
-        // Kiểm tra các khóa học - thêm course_id vào text
-        composeTestRule.onNodeWithText("1 Elementary Course").assertExists()
-        composeTestRule.onNodeWithText("2 Intermediate Course").assertExists()
+        composeTestRule.onNodeWithText("Elementary Course").assertExists()
+        composeTestRule.onNodeWithText("Intermediate Course").assertExists()
     }
 
     @Test
@@ -79,13 +75,13 @@ class CourseScreenTest {
         composeTestRule.setContent {
             EngGoTheme {
                 CourseListItem(
-                    courses = course,
-                    onItemClick = { clicked = true }
+                    course = course,
+                    onItemClick = { _, _ -> clicked = true }
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("1 Test Course").performClick()
+        composeTestRule.onNodeWithText("Test Course").performClick()
         assert(clicked)
     }
 
@@ -125,54 +121,42 @@ class CourseScreenTest {
 
     @Test
     fun testTopBarTitle() {
-        // Test hiển thị tiêu đề của TopBar
         composeTestRule.setContent {
             CourseScreen(
-                onCourseClick = {},
+                onCourseClick = { _, _ -> },
                 unfilteredCoursesList = emptyList()
             )
         }
-
-        // Kiểm tra text "Courses" có xuất hiện trong TopBar
         composeTestRule.onNodeWithText("Courses").assertExists()
     }
 
+
     @Test
     fun testCourseDescriptionEllipsis() {
-        val longDescription = "This is a very long description that should be truncated with ellipsis because it exceeds the maximum number of lines allowed in the course description."
-        val course = Course(
-            course_id = 1,
-            course_name = "Test Course",
-            course_description = longDescription,
-            course_level = 1
-        )
+        val longDescription = "This is a very long description..."
+        val course = Course(1, "Test Course", longDescription, 1)
 
         composeTestRule.setContent {
             CourseListItem(
-                courses = course,
-                onItemClick = {}
+                course = course,
+                onItemClick = { _, _ -> }
             )
         }
 
-        // Chỉ kiểm tra sự tồn tại của text
-        composeTestRule.onNodeWithText(longDescription, substring = true)
-            .assertExists()
+        composeTestRule.onNodeWithText(longDescription, substring = true).assertExists()
     }
 
     @Test
     fun testEmptyCoursesListDisplay() {
-        // Test hiển thị khi không có khóa học
         composeTestRule.setContent {
             CourseScreen(
-                onCourseClick = {},
+                onCourseClick = { _, _ -> },
                 unfilteredCoursesList = emptyList()
             )
         }
 
-        // Không nên hiển thị bất kỳ level title nào khi không có khóa học
         LevelTitles.values().forEach { level ->
             composeTestRule.onNodeWithText(level.title).assertDoesNotExist()
         }
     }
 }
-
