@@ -50,6 +50,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+
 
 private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
 private val folderCollectionRef = Firebase.firestore.collection("Folder")
@@ -131,21 +136,25 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
                 Box(
                     modifier = Modifier.fillMaxWidth(0.88f)
                 ) {
-                    if (firstCard.size > 0) {
-                        if (ok == 1) {
-                            ok = 0
+                    AnimatedContent(
+                        targetState = pagePreview,
+                        transitionSpec = {
+                            if (targetState > initialState) {
+                                slideInHorizontally { width -> width } togetherWith
+                                        slideOutHorizontally { width -> -width }
+                            } else {
+                                slideInHorizontally { width -> -width } togetherWith
+                                        slideOutHorizontally { width -> width }
+                            }
+                        }
+                    ) { targetPage ->
+                        if (firstCard.size > 0) {
                             flashCardView(
-                                Flashcard(firstCard[pagePreview], secondCard[pagePreview]),
+                                Flashcard(firstCard[targetPage], secondCard[targetPage]),
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } else
-                            flashCardView(
-                                Flashcard(firstCard[pagePreview], secondCard[pagePreview]),
-                                modifier = Modifier.fillMaxSize()
-                            )
+                        }
                     }
-
-
                 }
                 Box(
                     modifier = Modifier.fillMaxWidth()
