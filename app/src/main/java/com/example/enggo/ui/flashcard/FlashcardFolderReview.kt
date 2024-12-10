@@ -54,6 +54,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import com.example.enggo.ui.flashcard.navigation.navigateToFlashcard
 
 
 private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
@@ -68,7 +69,7 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
     var flashcardNumber by remember { mutableStateOf(0) }
     var firstCard = remember { mutableListOf<String>() }
     var secondCard = remember { mutableListOf<String>() }
-    var name by remember { mutableStateOf("Folder Name") }
+    var name by remember { mutableStateOf("") }
 
     if (init == 1) {
         fcCollectionRef.whereEqualTo("folderid", id)
@@ -99,7 +100,11 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = { navController.navigateUp() }) {
+                IconButton(
+                    modifier = Modifier.size(50.dp)
+                        .padding(start = 16.dp, top = 10.dp),
+                    onClick = { navController.navigateToFlashcard() }
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back"
@@ -107,10 +112,26 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
                 }
                 Text(
                     text = name,
-                    fontSize = 36.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
+                    modifier = Modifier.padding(start = 10.dp, top = 20.dp, bottom = 10.dp)
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.edit_icon),
+                        contentDescription = "Edit Flashcard",
+                        modifier = Modifier.size(40.dp)
+                            .padding(end = 16.dp)
+                            .clickable {
+                                navController.navigate("FlashcardEdit/${id}")
+                            }
+                    )
+                }
             }
 
             Row(
