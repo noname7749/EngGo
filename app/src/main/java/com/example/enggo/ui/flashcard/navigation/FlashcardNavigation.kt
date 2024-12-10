@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.enggo.ui.flashcard.FlashcardFolderView
 import com.example.enggo.ui.flashcard.FlashcardHomeScreen
 import com.example.enggo.ui.flashcard.createFCFolderScreen
+import com.example.enggo.ui.flashcard.editFCFolderScreen
 
 const val Flashcard_ROUTE = "Flashcard"
 
@@ -26,5 +27,10 @@ fun NavGraphBuilder.flashcardHome(
     composable("FlashcardReview" + "/{id}") {
         val id = it.arguments?.getString("id")
         FlashcardFolderView(id?:"0", navController)  // Thêm navController vào đây
+    }
+
+    composable("FlashcardEdit" + "/{id}") {
+        val id = it.arguments?.getString("id")
+        editFCFolderScreen(id?:"0", navController)  // Thêm navController vào đây
     }
 }
