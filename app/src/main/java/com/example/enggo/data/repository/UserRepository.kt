@@ -2,6 +2,8 @@ package com.example.enggo.data.repository
 
 import com.example.enggo.model.ProfileData
 import com.example.enggo.model.UserData
+import com.example.enggo.model.course.Course
+import com.example.enggo.model.dictionary.WordModel
 
 
 interface UserRepository {
@@ -22,4 +24,13 @@ interface UserRepository {
     suspend fun getFCMToken(userId: String): String
     suspend fun getUsernameById(userId: String): String?
 
+    //them bookmarks nhu subcollection cua user
+    suspend fun addBookmark(userId: String, word: WordModel): Boolean
+    suspend fun getBookmarks(userId: String): List<WordModel>
+    suspend fun removeBookmark(userId: String, wordsetId: String)
+
+    suspend fun addRecentCourses(userId: String, course: Course) : Boolean
+    suspend fun isCourseExistInRecent(userId: String, courseId: Int): Boolean
+    suspend fun updateCourseTimestamp(userId: String, courseId: Int): Boolean
+    suspend fun getRecentCourses(userId: String): List<Map<String, Any>>
 }

@@ -23,33 +23,65 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.enggo.model.Flashcard
 import com.example.enggo.ui.theme.EngGoTheme
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun flashCardView(fc : Flashcard, modifier : Modifier = Modifier) {
-
-    var s by remember { mutableStateOf(fc.FirstCard) }
+fun flashCardView(
+    fc: Flashcard,
+    modifier: Modifier = Modifier
+) {
+    var isFlipped by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(
+        targetValue = if (isFlipped) 180f else 0f,
+        animationSpec = tween(500)
+    )
 
     Card(
-        onClick = {
-            if (s.equals(fc.FirstCard)) {
-                s = fc.SecondCard
-            }
-            else {
-                s = fc.FirstCard
-            }
+        onClick = { isFlipped = !isFlipped },
+        modifier = modifier.graphicsLayer {
+            rotationY = rotation
+            cameraDistance = 12f * density
         },
-        modifier = modifier
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column (
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxHeight()
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = s,
-                textAlign = TextAlign.Center,
-                fontSize = 22.sp,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
-            )
+            if (rotation <= 90f) {
+                Text(
+                    text = fc.FirstCard,
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(32.dp)
+                )
+            } else {
+                Text(
+                    text = fc.SecondCard,
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .graphicsLayer { rotationY = 180f }
+                        .padding(32.dp)
+                )
+            }
         }
     }
 }

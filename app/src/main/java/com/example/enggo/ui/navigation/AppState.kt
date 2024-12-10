@@ -64,6 +64,7 @@ class AppState(
                 // avoid building up a large stack of destinations
                 // on the back stack as users select items
                 popUpTo(navController.graph.findStartDestination().id) {
+                    inclusive = true
                     saveState = true
                 }
                 // Avoid multiple copies of the same destination when
