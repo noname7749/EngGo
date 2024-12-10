@@ -39,13 +39,28 @@ import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import androidx.navigation.NavController
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 
 
 private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
 private val folderCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
-fun FlashcardFolderView(id : String, modifier : Modifier = Modifier) {
+fun FlashcardFolderView(id : String, navController: NavController, modifier : Modifier = Modifier) {
 
     var pagePreview by remember { mutableStateOf(0) }
     var ok by remember { mutableStateOf(1) }
@@ -80,13 +95,23 @@ fun FlashcardFolderView(id : String, modifier : Modifier = Modifier) {
         Column(
             modifier = modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "$name",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+                Text(
+                    text = name,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
+                )
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -111,21 +136,25 @@ fun FlashcardFolderView(id : String, modifier : Modifier = Modifier) {
                 Box(
                     modifier = Modifier.fillMaxWidth(0.88f)
                 ) {
-                    if (firstCard.size > 0) {
-                        if (ok == 1) {
-                            ok = 0
+                    AnimatedContent(
+                        targetState = pagePreview,
+                        transitionSpec = {
+                            if (targetState > initialState) {
+                                slideInHorizontally { width -> width } togetherWith
+                                        slideOutHorizontally { width -> -width }
+                            } else {
+                                slideInHorizontally { width -> -width } togetherWith
+                                        slideOutHorizontally { width -> width }
+                            }
+                        }
+                    ) { targetPage ->
+                        if (firstCard.size > 0) {
                             flashCardView(
-                                Flashcard(firstCard[pagePreview], secondCard[pagePreview]),
+                                Flashcard(firstCard[targetPage], secondCard[targetPage]),
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } else
-                            flashCardView(
-                                Flashcard(firstCard[pagePreview], secondCard[pagePreview]),
-                                modifier = Modifier.fillMaxSize()
-                            )
+                        }
                     }
-
-
                 }
                 Box(
                     modifier = Modifier.fillMaxWidth()
