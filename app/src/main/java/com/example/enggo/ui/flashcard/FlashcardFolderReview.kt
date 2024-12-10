@@ -39,13 +39,23 @@ import com.example.enggo.model.FlashcardFolder
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import androidx.navigation.NavController
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 
 private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
 private val folderCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
-fun FlashcardFolderView(id : String, modifier : Modifier = Modifier) {
+fun FlashcardFolderView(id : String, navController: NavController, modifier : Modifier = Modifier) {
 
     var pagePreview by remember { mutableStateOf(0) }
     var ok by remember { mutableStateOf(1) }
@@ -80,13 +90,23 @@ fun FlashcardFolderView(id : String, modifier : Modifier = Modifier) {
         Column(
             modifier = modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "$name",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+                Text(
+                    text = name,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
+                )
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

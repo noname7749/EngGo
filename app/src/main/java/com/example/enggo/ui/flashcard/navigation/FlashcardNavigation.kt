@@ -25,6 +25,6 @@ fun NavGraphBuilder.flashcardHome(
     }
     composable("FlashcardReview" + "/{id}") {
         val id = it.arguments?.getString("id")
-        FlashcardFolderView(id?:"0")
+        FlashcardFolderView(id?:"0", navController)  // Thêm navController vào đây
     }
 }
