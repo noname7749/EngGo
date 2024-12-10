@@ -42,8 +42,10 @@ import com.example.enggo.ui.flashcard.navigation.navigateToFlashcard
 import com.example.enggo.ui.theme.EngGoTheme
 import com.google.firebase.*
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.Delay
 
-private val fcCollectionRef = Firebase.firestore.collection("Folder")
+private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
+private val folderCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
 fun createFCFolderScreen(
@@ -113,20 +115,22 @@ fun createFCFolderScreen(
                     .border(1.dp, Color.Black)
                     .clickable {
                         //TODO
-                        var f : FlashcardFolder = FlashcardFolder(name = FolderName, userId = idUser)
-                        for (i in 0..terms.size - 1) {
-                            if (terms[i].equals("") or defs[i].equals(""))
-                                continue
-                            f.addFlashcard(Flashcard(terms[i], defs[i]))
-                        }
 
-                        fcCollectionRef
+                        var f : FlashcardFolder = FlashcardFolder(name = FolderName, userId = idUser)
+                        folderCollectionRef
                             .get()
                             .addOnSuccessListener { document ->
                                 id = document.count() + 1
                                 //Log.d("Test count 1", id.toString())
-                                fcCollectionRef.document(id.toString()).set(f)
+                                folderCollectionRef.document(id.toString()).set(f)
+                                for (i in 0..terms.size - 1) {
+                                    if (terms[i].equals("") or defs[i].equals(""))
+                                        continue
+                                    var fc = Flashcard(terms[i], defs[i], id.toString())
+                                    fcCollectionRef.add(fc)
+                                }
                             }
+
                         //Leave here
                         navController.navigateToFlashcard()
                     }

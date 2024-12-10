@@ -41,42 +41,61 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.getField
 import com.google.firebase.firestore.toObject
 
-private val fcCollectionRef = Firebase.firestore.collection("Folder")
+private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
+private val folderCollectionRef = Firebase.firestore.collection("Folder")
 
 @Composable
 fun FlashcardHomeScreen(
     navController : NavController,
+    inited : Int,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
     val idUser: String? = sharedPref.getString("currentUserId", null)
     var names = remember { mutableStateListOf<String>() }
-    var nums = remember { mutableStateListOf<Int>() }
+    var nums = remember { mutableStateListOf<String>() }
+    var ids = remember { mutableStateListOf<String>() }
     var filterText by remember { mutableStateOf("Enter Filter") }
-    var init by remember {mutableStateOf(0)}
+    var init by remember {mutableStateOf(inited)}
 
-    if (init == 0) {
-        init = 1
-        fcCollectionRef
+    if (init == 1) {
+        folderCollectionRef
             .whereEqualTo("userId", idUser)
             .get()
             .addOnSuccessListener { documents->
                 for (document in documents) {
-                    var name : String? = document.getString("name")
-                    if (name.equals(null))
-                        name = ""
-                    names.add(name.toString())
-                    var num = document.get("flashcardNumber")
-                    num = num.toString()
-                    nums.add(num.toInt())
+                    var id : String = document.id
+                    ids.add(id)
+                    nums.add("")
+                    names.add("")
                 }
                 Log.d("Firebase", "get document success")
             }
+        init = 0
     }
 
-    Column(modifier = modifier) {
 
+    for (index in 0..ids.size - 1) {
+        var name: String = ""
+        folderCollectionRef.document(ids[index])
+            .get()
+            .addOnSuccessListener { document ->
+                name = document.get("name").toString()
+                names[index] = name
+            }
+        var numOfItems: String = ""
+        fcCollectionRef.whereEqualTo("folderid", ids[index])
+            .get()
+            .addOnSuccessListener { documents ->
+                numOfItems = documents.count().toString()
+                nums[index] = numOfItems
+            }
+    }
+
+
+
+    Column(modifier = modifier) {
         FlashcardHomeTopbar(navController)
 
         TextField(
@@ -87,21 +106,40 @@ fun FlashcardHomeScreen(
                 .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
         )
 
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            itemsIndexed(names) { index, item ->
-                FlashcardView(names[index], nums[index])
+        if (nums.size >= ids.size) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                itemsIndexed(ids) { index, item ->
+                    FlashcardView(
+                        navController = navController,
+                        name = names[index],
+                        numOfItems = nums[index],
+                        id = ids[index]
+                    )
+                }
             }
         }
-
     }
+
+
+
 }
 
 @Composable
-fun FlashcardView(name: String, numOfItems: Int, modifier: Modifier = Modifier) {
+fun FlashcardView(
+    navController: NavController,
+    name: String,
+    numOfItems: String,
+    id : String,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, bottom = 30.dp, end = 16.dp)
+            .clickable {
+                navController.navigate("FlashcardReview" + "/" + id)
+                Log.d("Firebase", "Clicked " + id)
+            }
     ) {
         Column {
             Text(
@@ -112,7 +150,7 @@ fun FlashcardView(name: String, numOfItems: Int, modifier: Modifier = Modifier) 
             )
 
             Text(
-                text = "$numOfItems items",
+                text = numOfItems + " items",
                 fontSize = 20.sp,
                 modifier = Modifier.padding(start = 5.dp, bottom = 5.dp)
             )
@@ -121,7 +159,9 @@ fun FlashcardView(name: String, numOfItems: Int, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun FlashcardHomeTopbar(navController: NavController) {
+fun FlashcardHomeTopbar(
+    navController: NavController
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End,
