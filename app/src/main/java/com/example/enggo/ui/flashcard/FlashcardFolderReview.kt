@@ -55,7 +55,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import com.example.enggo.ui.flashcard.navigation.navigateToFlashcard
-
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.Color
 
 private val fcCollectionRef = Firebase.firestore.collection("Flashcard")
 private val folderCollectionRef = Firebase.firestore.collection("Folder")
@@ -122,6 +123,33 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+
+                    IconButton(
+                        onClick = {
+                            // 4. Code xử lý xóa folder và flashcards
+                            fcCollectionRef.whereEqualTo("folderid", id)
+                                .get()
+                                .addOnSuccessListener { documents ->
+                                    for (document in documents) {
+                                        fcCollectionRef.document(document.id).delete()
+                                    }
+                                    // Sau khi xóa flashcards, xóa folder
+                                    folderCollectionRef.document(id).delete()
+                                        .addOnSuccessListener {
+                                            navController.navigateToFlashcard()
+                                        }
+                                }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Folder",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(end = 8.dp),
+                            tint = Color.Black
+                        )
+                    }
                     Image(
                         painter = painterResource(R.drawable.edit_icon),
                         contentDescription = "Edit Flashcard",
