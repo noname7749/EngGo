@@ -56,6 +56,7 @@ fun FlashcardHomeScreen(
     var names = remember { mutableStateListOf<String>() }
     var nums = remember { mutableStateListOf<String>() }
     var ids = remember { mutableStateListOf<String>() }
+    var ok by remember { mutableStateOf(0) }
     var filterText by remember { mutableStateOf("Enter Filter") }
     var init by remember {mutableStateOf(inited)}
 
@@ -93,33 +94,35 @@ fun FlashcardHomeScreen(
             }
     }
 
+    if (nums.size >= ids.size)
+        ok = 1
 
+    if (ok == 1) {
+        Column(modifier = modifier) {
+            FlashcardHomeTopbar(navController)
 
-    Column(modifier = modifier) {
-        FlashcardHomeTopbar(navController)
+            TextField(
+                value = filterText,
+                onValueChange = { filterText = it },
+                label = { Text("Filter") },
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
+            )
 
-        TextField(
-            value = filterText,
-            onValueChange = { filterText = it },
-            label = { Text("Filter") },
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
-        )
-
-        if (nums.size >= ids.size) {
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                itemsIndexed(ids) { index, item ->
-                    FlashcardView(
-                        navController = navController,
-                        name = names[index],
-                        numOfItems = nums[index],
-                        id = ids[index]
-                    )
+            if (nums.size >= ids.size) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    itemsIndexed(ids) { index, item ->
+                        FlashcardView(
+                            navController = navController,
+                            name = names[index],
+                            numOfItems = nums[index],
+                            id = ids[index]
+                        )
+                    }
                 }
             }
         }
     }
-
 
 
 }
@@ -178,15 +181,15 @@ fun FlashcardHomeTopbar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
-                .clickable {
-                navController.navigate("Flashcard_create")
-            }
         ) {
             Image(
                 painter = painterResource(R.drawable.plus_icon),
                 contentDescription = "Add Flashcard Button",
                 modifier = Modifier.size(50.dp)
                     .padding(end = 16.dp)
+                    .clickable {
+                        navController.navigate("Flashcard_create")
+                    }
             )
         }
     }
