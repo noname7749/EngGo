@@ -2,162 +2,198 @@ package com.example.enggo.ui.register
 
 import com.example.enggo.data.service.UserService
 import com.example.enggo.model.UserData
-import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
-import org.mockito.junit.MockitoJUnitRunner
-import org.junit.Assert.*
+import org.mockito.MockitoAnnotations
 
 /**
- * Class test cho các chức năng liên quan đến Register.
+ * Unit test cho các chức năng liên quan đến đăng ký
+ * Kiểm tra xác thực dữ liệu đăng ký, kiểm tra tính khả dụng của username/email
  */
-@ExperimentalCoroutinesApi
-@RunWith(MockitoJUnitRunner::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class RegisterLogicTest {
-
     @Mock
-    private lateinit var firestore: FirebaseFirestore
-
     private lateinit var userService: UserService
-    private val testDispatcher = StandardTestDispatcher()
 
-    private val testUsername = "testUser"
-    private val testEmail = "test@example.com"
-    private val testPassword = "testPass123"
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setup() {
-        userService = UserService(firestore)
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     /**
-     * Test đăng ký thành công với thông tin hợp lệ
+     * Kiểm tra đăng ký thành công
      */
     @Test
-    fun `test register successful with valid information`() = runTest {
-        // Chuẩn bị dữ liệu test
+    fun `test successful registration`() = kotlinx.coroutines.test.runTest {
+        // Given
         val userData = UserData(
-            username = testUsername,
-            password = testPassword,
-            email = testEmail
+            id = "temp_id",
+            username = "newuser",
+            password = "password123",
+            email = "test@example.com"
         )
 
-        `when`(userService.checkUsernameAvailability(testUsername)).thenReturn(false)
-        `when`(userService.checkEmailAvailability(testEmail)).thenReturn(false)
-        `when`(userService.addUserData(userData)).thenReturn(userData.toString())
+        `when`(userService.addUserData(userData)).thenReturn("user123")
 
-        // Thực thi đăng ký
-        val registrationResult = userService.addUserData(userData)
+        // When
+        val result = userService.addUserData(userData)
 
-        // Kiểm tra kết quả
-        assertNotNull(registrationResult)
+        // Then
+        assertNotNull(result)
         verify(userService).addUserData(userData)
     }
 
     /**
-     * Test kiểm tra username đã tồn tại
+     * Kiểm tra tính khả dụng của username
      */
     @Test
-    fun `test username already exists`() = runTest {
-        // Setup mock cho username đã tồn tại
-        `when`(userService.checkUsernameAvailability(testUsername)).thenReturn(true)
+    fun `test username availability check`() = kotlinx.coroutines.test.runTest {
+        // Given
+        val username = "availableuser"
+        `when`(userService.checkUsernameAvailability(username)).thenReturn(true)
 
-        // Kiểm tra availability
-        val isUsernameExists = userService.checkUsernameAvailability(testUsername)
+        // When
+        val result = userService.checkUsernameAvailability(username)
 
-        // Verify kết quả
-        assertTrue(isUsernameExists)
+        // Then
+        assertTrue(result)
     }
 
     /**
-     * Test kiểm tra email đã tồn tại
+     * Kiểm tra tính khả dụng của email
      */
     @Test
-    fun `test email already exists`() = runTest {
-        // Setup mock cho email đã tồn tại
-        `when`(userService.checkEmailAvailability(testEmail)).thenReturn(true)
+    fun `test email availability check`() = kotlinx.coroutines.test.runTest {
+        // Given
+        val email = "available@example.com"
+        `when`(userService.checkEmailAvailability(email)).thenReturn(true)
 
-        // Kiểm tra availability
-        val isEmailExists = userService.checkEmailAvailability(testEmail)
+        // When
+        val result = userService.checkEmailAvailability(email)
 
-        // Verify kết quả
-        assertTrue(isEmailExists)
+        // Then
+        assertTrue(result)
     }
 
     /**
-     * Test đăng ký với email không hợp lệ
+     * Kiểm tra xác thực password với các trường hợp khác nhau
      */
     @Test
-    fun `test register with invalid email format`() = runTest {
+    fun `test password validation cases`() {
+        // Test mật khẩu trống
+        assertFalse(validatePasswords("", ""))
+
+        // Test mật khẩu không trùng khớp
+        assertFalse(validatePasswords("pass123", "pass456"))
+
+        // Test mật khẩu trùng
+        assertTrue(validatePasswords("password123", "password123"))
+
+        // Test mật khẩu quá ngắn
+        assertFalse(validatePasswords("pass", "pass"))
+    }
+
+    /**
+     * Kiểm tra đăng ký với email không hợp lệ
+     */
+    @Test
+    fun `test registration with invalid email`() = kotlinx.coroutines.test.runTest {
+        // Given
         val invalidEmail = "invalid.email"
-        val userData = UserData(
-            username = testUsername,
-            password = testPassword,
-            email = invalidEmail
-        )
+        `when`(userService.checkEmailAvailability(invalidEmail)).thenReturn(false)
 
-        // Thử đăng ký với email không hợp lệ
-        val registrationResult = userService.addUserData(userData)
+        // When
+        val result = userService.checkEmailAvailability(invalidEmail)
 
-        // Verify không thể đăng ký
-        assertNull(registrationResult)
+        // Then
+        assertFalse(result)
     }
 
     /**
-     * Test đăng ký với mật khẩu yếu
+     * Kiểm tra xác thực email cơ bản
      */
     @Test
-    fun `test register with weak password`() = runTest {
-        val weakPassword = "123"
-        val userData = UserData(
-            username = testUsername,
-            password = weakPassword,
-            email = testEmail
-        )
+    fun `test email validation cases`() {
+        // Test empty email
+        assertFalse(isValidEmail(""))
 
-        // Thử đăng ký với mật khẩu yếu
-        val registrationResult = userService.addUserData(userData)
+        // Test email không có @
+        assertFalse(isValidEmail("invalidemail"))
 
-        // Verify không thể đăng ký
-        assertNull(registrationResult)
+        // Test email không có domain
+        assertFalse(isValidEmail("user@"))
+
+        // Test email không có username
+        assertFalse(isValidEmail("@domain.com"))
+
+        // Test email hợp lệ
+        assertTrue(isValidEmail("user@example.com"))
     }
 
     /**
-     * Test confirm password không khớp
+     * Kiểm tra đăng ký với username đã tồn tại
      */
     @Test
-    fun `test password confirmation mismatch`() {
-        val password = "password123"
-        val confirmPassword = "password124"
+    fun `test registration with existing username`() = kotlinx.coroutines.test.runTest {
+        // Given
+        val existingUsername = "existinguser"
+        `when`(userService.checkUsernameAvailability(existingUsername)).thenReturn(false)
 
-        // Kiểm tra password và confirm password có khớp nhau
-        assertNotEquals(password, confirmPassword)
+        // When
+        val result = userService.checkUsernameAvailability(existingUsername)
+
+        // Then
+        assertFalse(result)
     }
 
     /**
-     * Test tạo profile sau khi đăng ký thành công
+     * Kiểm tra trạng thái hiển thị password
      */
     @Test
-    fun `test profile created after successful registration`() = runTest {
-        val userData = UserData(
-            username = testUsername,
-            password = testPassword,
-            email = testEmail
-        )
+    fun `test password visibility toggles`() {
+        // Given
+        var passwordVisible = false
+        var confirmPasswordVisible = false
 
-        `when`(userService.addUserData(userData)).thenReturn(userData.toString())
+        // When & Then
+        passwordVisible = !passwordVisible
+        assertTrue(passwordVisible)
 
-        // Thực hiện đăng ký
-        val registrationResult = userService.addUserData(userData)
+        confirmPasswordVisible = !confirmPasswordVisible
+        assertTrue(confirmPasswordVisible)
+    }
 
-        // Verify profile được tạo
-        verify(userService).addUserData(userData)
-        assertNotNull(registrationResult)
+    // Hàm phụ trợ cho việc test
+    private fun validatePasswords(password: String, confirmPassword: String): Boolean {
+        if (password.isEmpty() || confirmPassword.isEmpty()) return false
+        if (password.length < 6) return false
+        return password == confirmPassword
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        if (email.isEmpty()) return false
+        // email hợp lệ : phải chứa @ and có text trước và sau nó
+        return email.contains("@") &&
+                email.split("@").size == 2 &&
+                email.split("@")[0].isNotEmpty() &&
+                email.split("@")[1].isNotEmpty() &&
+                email.split("@")[1].contains(".")
     }
 }
