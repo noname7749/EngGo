@@ -4,6 +4,7 @@ import com.example.enggo.data.service.UserService
 import com.example.enggo.model.UserData
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -11,8 +12,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.Assert.*
 
 /**
@@ -26,8 +25,7 @@ class RegisterLogicTest {
     private lateinit var firestore: FirebaseFirestore
 
     private lateinit var userService: UserService
-    private val testDispatcher = TestCoroutineDispatcher()
-    private val testScope = TestCoroutineScope(testDispatcher)
+    private val testDispatcher = StandardTestDispatcher()
 
     private val testUsername = "testUser"
     private val testEmail = "test@example.com"
@@ -55,10 +53,10 @@ class RegisterLogicTest {
         `when`(userService.addUserData(userData)).thenReturn(userData.toString())
 
         // Thực thi đăng ký
-        val result = userService.addUserData(userData)
+        val registrationResult = userService.addUserData(userData)
 
         // Kiểm tra kết quả
-        assertNotNull(result)
+        assertNotNull(registrationResult)
         verify(userService).addUserData(userData)
     }
 
@@ -71,10 +69,10 @@ class RegisterLogicTest {
         `when`(userService.checkUsernameAvailability(testUsername)).thenReturn(true)
 
         // Kiểm tra availability
-        val result = userService.checkUsernameAvailability(testUsername)
+        val isUsernameExists = userService.checkUsernameAvailability(testUsername)
 
         // Verify kết quả
-        assertTrue(result)
+        assertTrue(isUsernameExists)
     }
 
     /**
@@ -86,10 +84,10 @@ class RegisterLogicTest {
         `when`(userService.checkEmailAvailability(testEmail)).thenReturn(true)
 
         // Kiểm tra availability
-        val result = userService.checkEmailAvailability(testEmail)
+        val isEmailExists = userService.checkEmailAvailability(testEmail)
 
         // Verify kết quả
-        assertTrue(result)
+        assertTrue(isEmailExists)
     }
 
     /**
@@ -105,10 +103,10 @@ class RegisterLogicTest {
         )
 
         // Thử đăng ký với email không hợp lệ
-        val result = userService.addUserData(userData)
+        val registrationResult = userService.addUserData(userData)
 
         // Verify không thể đăng ký
-        assertNull(result)
+        assertNull(registrationResult)
     }
 
     /**
@@ -124,10 +122,10 @@ class RegisterLogicTest {
         )
 
         // Thử đăng ký với mật khẩu yếu
-        val result = userService.addUserData(userData)
+        val registrationResult = userService.addUserData(userData)
 
         // Verify không thể đăng ký
-        assertNull(result)
+        assertNull(registrationResult)
     }
 
     /**
@@ -156,9 +154,10 @@ class RegisterLogicTest {
         `when`(userService.addUserData(userData)).thenReturn(userData.toString())
 
         // Thực hiện đăng ký
-        val result = userService.addUserData(userData)
+        val registrationResult = userService.addUserData(userData)
 
         // Verify profile được tạo
         verify(userService).addUserData(userData)
+        assertNotNull(registrationResult)
     }
 }

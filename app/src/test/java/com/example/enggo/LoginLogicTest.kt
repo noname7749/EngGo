@@ -6,6 +6,7 @@ import com.example.enggo.data.service.UserService
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -13,8 +14,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.Assert.*
 
 /**
@@ -40,8 +39,7 @@ class LoginLogicTest {
     private lateinit var firebaseMessaging: FirebaseMessaging
 
     private lateinit var userService: UserService
-    private val testDispatcher = TestCoroutineDispatcher()
-    private val testScope = TestCoroutineScope(testDispatcher)
+    private val testDispatcher = StandardTestDispatcher()
 
     private val testUsername = "testUser"
     private val testPassword = "testPass123"
@@ -68,10 +66,10 @@ class LoginLogicTest {
         `when`(userService.getUserIdByUsername(testUsername)).thenReturn(testUserId)
 
         // Thực thi đăng nhập
-        val result = login(testUsername, testPassword, context)
+        val isSuccess = login(testUsername, testPassword, context)
 
         // Kiểm tra kết quả
-        assertTrue(result)
+        assertTrue(isSuccess)
         verify(sharedPreferencesEditor).putString("currentUserId", testUserId)
         verify(sharedPreferencesEditor).putString("currentUsername", testUsername)
         verify(sharedPreferencesEditor).apply()
@@ -86,10 +84,10 @@ class LoginLogicTest {
         `when`(userService.verifyLoginInfo(testUsername, testPassword)).thenReturn(false)
 
         // Thực thi đăng nhập
-        val result = login(testUsername, testPassword, context)
+        val isSuccess = login(testUsername, testPassword, context)
 
         // Kiểm tra kết quả
-        assertFalse(result)
+        assertFalse(isSuccess)
         verify(sharedPreferencesEditor, never()).putString("currentUserId", any())
     }
 
@@ -100,9 +98,9 @@ class LoginLogicTest {
     fun `test login with empty username`() = runTest {
         val emptyUsername = ""
 
-        val result = login(emptyUsername, testPassword, context)
+        val isSuccess = login(emptyUsername, testPassword, context)
 
-        assertFalse(result)
+        assertFalse(isSuccess)
     }
 
     /**
@@ -112,9 +110,9 @@ class LoginLogicTest {
     fun `test login with empty password`() = runTest {
         val emptyPassword = ""
 
-        val result = login(testUsername, emptyPassword, context)
+        val isSuccess = login(testUsername, emptyPassword, context)
 
-        assertFalse(result)
+        assertFalse(isSuccess)
     }
 
     /**
