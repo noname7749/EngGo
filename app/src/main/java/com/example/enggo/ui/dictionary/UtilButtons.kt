@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
@@ -22,7 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,38 +28,38 @@ import androidx.compose.ui.unit.dp
 import com.example.enggo.R
 
 @Composable
-fun UtilButtons() {
+fun UtilButtons(viewModel: WordModelViewModel, word: String) {
     val context = LocalContext.current
-//    var clickedState by remember { mutableStateOf(false) }
-//    val ttsListener by remember {
-//        mutableStateOf(TTSListener(context) {
-//            clickedState = false
-//        })
-//    }
-//    LocalLifecycleOwner.current.lifecycle.addObserver(ttsListener)
-//    AudioButton (
-//        clicked = clickedState
-//    ) {
-//        Log.d("Nghe", "Nhan nut audio")
-//        clickedState = !clickedState
-//        if (clickedState) {
-//            ttsListener.speak("apple")
-//        } else {
-//            ttsListener.stop()
-//        }
-//    }
-    AudioButton() {
-        Log.d("Audio", "Nhan nghe audio")
+    var clickedState by remember { mutableStateOf(false) }
+    val ttsListener by remember {
+        mutableStateOf(TTSListener(context) {
+            clickedState = false
+        })
+    }
+    LocalLifecycleOwner.current.lifecycle.addObserver(ttsListener)
+    AudioButton (
+        clicked = clickedState
+    ) {
+        Log.d("AUDIO BUTTON", "Nhan nut audio")
+        clickedState = !clickedState
+        if (clickedState) {
+            ttsListener.speak(word)
+        } else {
+            ttsListener.stop()
+        }
     }
 
     SaveButton() {
-        Log.d("Save", "Nhan save")
+        val wordModel = viewModel.wordState.value.wordModel
+        if (wordModel != null) {
+            viewModel.addBookmark(wordModel)
+        }
     }
 
     ShareButton() {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, "apple")
+            putExtra(Intent.EXTRA_TEXT, word)
         }
         val chooserIntent = Intent.createChooser(shareIntent, "Share via")
         context.startActivity(chooserIntent)
@@ -71,7 +69,7 @@ fun UtilButtons() {
 @Composable
 fun SaveButton(
     modifier: Modifier = Modifier,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
 ) {
     Card(
         elevation = CardDefaults.cardElevation(2.dp),
@@ -141,13 +139,15 @@ fun ShareButton(
 @Composable
 fun AudioButton(
     modifier: Modifier = Modifier,
-    //clicked: Boolean,
+    clicked: Boolean,
     onButtonClick: () -> Unit
 ) {
     Card(
         elevation = CardDefaults.cardElevation(2.dp),
         onClick = {
-            onButtonClick()
+            if (!clicked) {
+                onButtonClick()
+            }
         },
         shape = MaterialTheme.shapes.large
     ) {
@@ -166,7 +166,7 @@ fun AudioButton(
                 modifier = Modifier.size(dimensionResource(R.dimen.icon_image_size))
             )
             Text(
-                text = "Audio",
+                text = if (clicked) "Stop" else "Audio",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleSmall
             )

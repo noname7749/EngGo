@@ -21,7 +21,7 @@ import kotlinx.coroutines.runBlocking
 import org.mockito.Mock  // Thêm import này
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
-
+import com.example.enggo.data.service.UserService
 
 class CourseLogicTest {
 
@@ -107,6 +107,9 @@ class CourseLogicTest {
     private lateinit var courseService: CourseService
 
     @Mock
+    private lateinit var userService: UserService
+
+    @Mock
     private lateinit var firestore: FirebaseFirestore
 
     @Mock
@@ -117,10 +120,26 @@ class CourseLogicTest {
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-
         `when`(courseService.getAllCourses()).thenReturn(collectionReference)
+        viewModel = CourseViewModel(courseService, userService)
+    }
 
-        viewModel = CourseViewModel(courseService)
+    @Test
+    fun testLevelTitlesEnumValues() {
+        val testCases = mapOf(
+            LevelTitles.ELEMENTARY to Pair(1, "Elementary Courses"),
+            LevelTitles.PRE_INTERMEDIATE to Pair(2, "Pre-Intermediate Courses"),
+            LevelTitles.INTERMEDIATE to Pair(3, "Intermediate Courses"),
+            LevelTitles.INTERMEDIATE_PLUS to Pair(4, "Intermediate Plus Courses"),
+            LevelTitles.UPPER_INTERMEDIATE to Pair(5, "Upper-Intermediate Courses"),
+            LevelTitles.ADVANCED to Pair(6, "Advanced Courses"),
+            LevelTitles.IELTS to Pair(7, "IELTS Courses")
+        )
+
+        testCases.forEach { (level, expected) ->
+            assertEquals(expected.first, level.level)
+            assertEquals(expected.second, level.title)
+        }
     }
 
     @Test
@@ -129,3 +148,4 @@ class CourseLogicTest {
         assertTrue(initialCourses.isEmpty())
     }
 }
+

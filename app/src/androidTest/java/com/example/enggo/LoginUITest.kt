@@ -5,6 +5,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import org.junit.Rule
 import org.junit.Test
 import com.example.enggo.ui.login.LoginScreen
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 
 class LoginUITest {
 
@@ -56,4 +63,57 @@ class LoginUITest {
         // Điều này phụ thuộc vào cách bạn thực hiện hàm redirectToRegister
     }
 
+    @Test
+    fun verifyEmptyFieldsInitially() {
+        composeTestRule.setContent {
+            LoginScreen(onLoginClick = {}, redirectToRegister = {})
+        }
+
+        composeTestRule
+            .onNodeWithText("Username")
+            .assertTextContains("")
+        composeTestRule
+            .onNodeWithText("Password")
+            .assertTextContains("")
+    }
+
+    @Test
+    fun verifyErrorMessageDisplayWhenLoginFails() {
+        composeTestRule.setContent {
+            LoginScreen(onLoginClick = {}, redirectToRegister = {})
+        }
+
+        composeTestRule
+            .onNodeWithText("Username")
+            .performTextInput("wronguser")
+        composeTestRule
+            .onNodeWithText("Password")
+            .performTextInput("wrongpass")
+        composeTestRule
+            .onNodeWithText("Log In")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithText("Username or password is incorrect")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun passwordVisibilityToggleFunction() {
+        composeTestRule.setContent {
+            LoginScreen(onLoginClick = {}, redirectToRegister = {})
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("Password")
+            .performTextInput("testpassword")
+
+        composeTestRule
+            .onNodeWithContentDescription("Show Password")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithContentDescription("Hide Password")
+            .assertExists()
+    }
 }

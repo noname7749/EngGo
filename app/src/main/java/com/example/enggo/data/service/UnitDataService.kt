@@ -19,7 +19,6 @@ class UnitDataService (private val firestore: FirebaseFirestore) : UnitDataRepos
         val unitDataList = mutableListOf<UnitData>()
 
         for (document in snapshot.documents) {
-            Log.d("SNAPSHOT DOC", document.toString())
 
             //val courseId = document.getLong("course_id")?.toInt() ?: 0
             val unitId = document.getLong("unit_id")?.toInt() ?: 0
@@ -30,7 +29,6 @@ class UnitDataService (private val firestore: FirebaseFirestore) : UnitDataRepos
                 .collection("lessons")
                 .get()
                 .await()
-            Log.d("LESSONS SNAPSHOT", lessonsSnapshot.toString())
 
             val lessonList = lessonsSnapshot.documents.map { lessonDoc ->
                 Lesson(
@@ -44,9 +42,6 @@ class UnitDataService (private val firestore: FirebaseFirestore) : UnitDataRepos
 
             val unitData = UnitData(course_id = courseId, unit_id = unitId, unit_name = unitName, lessons = lessonList)
             unitDataList.add(unitData)
-        }
-        unitDataList.forEach { unitData ->
-            Log.d("CHECK FIREBASE", unitData.toString())
         }
         return unitDataList
     }
