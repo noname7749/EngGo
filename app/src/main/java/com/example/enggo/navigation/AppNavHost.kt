@@ -14,7 +14,9 @@ import com.example.enggo.ui.flashcard.navigation.flashcardHome
 import com.example.enggo.ui.unit.navigation.navigateToUnitList
 import com.example.enggo.ui.unit.navigation.unitListScreen
 import com.example.enggo.ui.home.navigation.HOME_ROUTE
+import com.example.enggo.ui.home.navigation.gptScreen
 import com.example.enggo.ui.home.navigation.homeScreen
+import com.example.enggo.ui.home.navigation.navigateToGPTQuestions
 import com.example.enggo.ui.home.navigation.navigateToHome
 import com.example.enggo.ui.lesson.navigation.exerciseScreens
 import com.example.enggo.ui.lesson.navigation.lessonScreen
@@ -49,7 +51,8 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
-        homeScreen(onRecentCourseClick = navController::navigateToUnitList)
+        homeScreen(onRecentCourseClick = navController::navigateToUnitList, onGenerateQuestionClick = navController::navigateToGPTQuestions)
+        gptScreen(onBackPressed = navController::popBackStack)
         coursesScreen(onCourseClick = navController::navigateToUnitList)
         unitListScreen(onBackPressed = navController::popBackStack, onLessonPressed = navController::navigateToLesson)
         lessonScreen(

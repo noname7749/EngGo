@@ -342,7 +342,7 @@ fun ChangePasswordScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         if (newPassword.isNotEmpty()) {
-                            onPasswordChange(userData, newPassword, coroutineScope, onBackClick)
+                            onPasswordChange(userData, newPassword, coroutineScope, onBackClick, context)
                         }
                     }
                 ),
@@ -366,7 +366,7 @@ fun ChangePasswordScreen(
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { if(checkChangePassword){onPasswordChange(userData, newPassword, coroutineScope, onBackClick) }}) {
+            Button(onClick = { if(checkChangePassword){onPasswordChange(userData, newPassword, coroutineScope, onBackClick, context) }}) {
                 Text("Change Password")
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -379,12 +379,14 @@ fun onPasswordChange(
     password: String,
     coroutineScope: CoroutineScope,
     onDone: () -> Unit,
+    context: Context
 ){
     val userService = UserService(FirebaseFirestore.getInstance())
     val updatedUserData = userData?.copy(password = password)
     coroutineScope.launch {
         if (updatedUserData != null) {
             userService.updateUserData(updatedUserData.id, updatedUserData)
+            Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
         }
         onDone()
     }
