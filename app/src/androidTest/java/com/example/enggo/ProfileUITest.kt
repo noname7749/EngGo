@@ -5,6 +5,9 @@ import androidx.compose.ui.test.*
 import com.example.enggo.ui.theme.EngGoTheme
 import org.junit.Rule
 import org.junit.Test
+import com.example.enggo.ui.theme.EngGoTheme
+import androidx.compose.ui.platform.LocalContext
+import com.example.enggo.ui.profile.navigation.*
 
 class ProfileUITest {
 
@@ -119,5 +122,114 @@ class ProfileUITest {
         // Chọn ảnh từ Gallery
         composeTestRule.onNodeWithText("Gallery").performClick()
         composeTestRule.onNodeWithContentDescription("User Avatar").assertExists()
+    }
+
+    // Test AccountManagementScreen
+    @Test
+    fun testSaveProfileChanges() {
+        var isProfileUpdated = false
+
+        composeTestRule.setContent {
+            EngGoTheme {
+                AccountManagementScreen(
+                    onPasswordChangeClick = {},
+                    onBackClick = {},
+                    onLogoutClick = {}
+                )
+            }
+        }
+
+        // Nhập thông tin mới
+        composeTestRule.onNodeWithText("User Name")
+            .performTextInput("NewUsername")
+
+        composeTestRule.onNodeWithText("Email")
+            .performTextInput("newemail@test.com")
+
+        // Click nút Save
+        composeTestRule.onNodeWithText("Save").performClick()
+
+        // Verify các trường đã được cập nhật
+        composeTestRule.onNodeWithText("NewUsername").assertExists()
+        composeTestRule.onNodeWithText("newemail@test.com").assertExists()
+    }
+
+    // Test ChangePasswordScreen
+    @Test
+    fun testPasswordChangeValidation() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                ChangePasswordScreen(onBackClick = {})
+            }
+        }
+
+        // Nhập sai mật khẩu cũ
+        composeTestRule.onNodeWithText("Old Password")
+            .performTextInput("wrongpassword")
+
+        // Verify thông báo lỗi
+        composeTestRule.onNodeWithText("Password is incorrect!")
+            .assertExists()
+    }
+
+    //Kiểm tra hiển thị avatar mặc định
+    @Test
+    fun testDefaultAvatarDisplay() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                ProfileViewScreen(onBackClick = {})
+            }
+        }
+
+        // Kiểm tra avatar mặc định được hiển thị
+        composeTestRule.onNodeWithContentDescription("User Avatar").assertExists()
+        // Kiểm tra nút thay đổi avatar
+        composeTestRule.onNodeWithText("Change Avatar").assertExists()
+    }
+
+    //Kiểm tra giao diện Change Password
+    @Test
+    fun testChangePasswordScreenUI() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                ChangePasswordScreen(onBackClick = {})
+            }
+        }
+
+        // Kiểm tra các trường nhập mật khẩu
+        composeTestRule.onNodeWithText("Old Password").assertExists()
+        composeTestRule.onNodeWithText("New Password").assertExists()
+        composeTestRule.onNodeWithText("Confirm Password").assertExists()
+
+        // Kiểm tra nút show/hide password
+        composeTestRule.onAllNodesWithContentDescription("Show Password")[0].assertExists()
+
+        // Kiểm tra nút submit
+        composeTestRule.onNodeWithText("Change Password").assertExists()
+    }
+
+    //Kiểm tra UI của Account Management
+    @Test
+    fun testAccountManagementUI() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                AccountManagementScreen(
+                    onPasswordChangeClick = {},
+                    onBackClick = {},
+                    onLogoutClick = {}
+                )
+            }
+        }
+
+        // Kiểm tra tiêu đề
+        composeTestRule.onNodeWithText("Your Profile").assertExists()
+
+        // Kiểm tra các trường input
+        composeTestRule.onNodeWithText("User Name").assertExists()
+        composeTestRule.onNodeWithText("Email").assertExists()
+
+        // Kiểm tra các nút
+        composeTestRule.onNodeWithText("Change Password").assertExists()
+        composeTestRule.onNodeWithText("Save").assertExists()
     }
 }
