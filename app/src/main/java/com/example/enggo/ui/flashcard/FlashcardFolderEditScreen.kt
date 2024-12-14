@@ -1,5 +1,6 @@
 package com.example.enggo.ui.flashcard
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -17,7 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,6 +70,11 @@ fun editFCFolderScreen(
     var firstCard = remember { mutableListOf<String>() }
     var secondCard = remember { mutableListOf<String>() }
     var name by remember { mutableStateOf("Folder Name") }
+    var id2 by remember { mutableStateOf(0) }
+
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("EngGoApp", Context.MODE_PRIVATE)
+    val idUser: String? = sharedPref.getString("currentUserId", null)
 
     if (init == 1) {
         fcCollectionRef.whereEqualTo("folderid", id)
@@ -117,6 +126,60 @@ fun editFCFolderScreen(
                         contentDescription = "Back"
                     )
                 }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        modifier = Modifier.size(50.dp)
+                            .padding(end = 16.dp),
+                        onClick = {
+                            flashcardNumber++
+                            firstCard.add("")
+                            secondCard.add("")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add"
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier.size(50.dp)
+                            .padding(end = 16.dp),
+                        onClick = {
+                            if (name.equals("") == false) {
+                                var f = FlashcardFolder(name = name, userId = idUser)
+                                folderCollectionRef
+                                    .get()
+                                    .addOnSuccessListener { document ->
+                                        id2 = document.count() + 1
+                                        folderCollectionRef.document(id2.toString()).set(f)
+                                            .addOnSuccessListener {
+                                                folderCollectionRef.document(id).update("userId", "NULL")
+                                            }
+                                        for (i in 0..firstCard.size - 1) {
+                                            if (firstCard[i].equals("") or secondCard[i].equals(""))
+                                                continue
+                                            var fc = Flashcard(firstCard[i], secondCard[i], id2.toString())
+                                            fcCollectionRef.add(fc)
+                                                .addOnSuccessListener {
+                                                    navController.navigate("FlashcardReview/$id2")
+                                                }
+                                        }
+                                    }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Done,
+                            contentDescription = "Finish"
+                        )
+                    }
+                }
             }
 
             TextField(
@@ -124,85 +187,27 @@ fun editFCFolderScreen(
                 onValueChange = { new_foldername ->
                     name = new_foldername
                 },
+                placeholder = { Text("Folder name") },
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             )
 
-            Text(
-                text = "Title",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-            )
-
-            Row() {
-                Card(
-                    modifier = Modifier.fillMaxWidth(0.5f)
-                        .padding(top = 10.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
-                        .border(1.dp, Color.Black)
-                        .clickable {
-                            flashcardNumber++
-                            firstCard.add("")
-                            secondCard.add("")
-                        }
-                ) {
-                    Text(
-                        text = "Add Term",
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(
-                            start = 10.dp,
-                            top = 5.dp,
-                            bottom = 5.dp,
-                            end = 10.dp
-                        )
-                    )
-                }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 10.dp, end = 10.dp)
-                        .border(1.dp, Color.Black)
-                        .clickable {
-                            if (ok == 0) {
-                                fcCollectionRef.whereEqualTo("folderid", id)
-                                    .get()
-                                    .addOnSuccessListener { documents ->
-                                        for (document in documents) {
-                                            fcCollectionRef.document(document.id).delete()
-                                        }
-                                        ok = 1
-                                    }
-                            }
-
-                            if (ok == 1) {
-                                folderCollectionRef.document(id).update("name", name)
-                                for (i in 0..firstCard.size - 1) {
-                                    if (firstCard[i].equals("") or secondCard[i].equals(""))
-                                        continue
-                                    Log.d("Firebase", "${firstCard[i]} ${secondCard[i]} $id")
-                                    var fc = Flashcard(
-                                        FirstCard = firstCard[i],
-                                        SecondCard = secondCard[i],
-                                        folderid = id
-                                    )
-                                    fcCollectionRef.add(fc)
-                                }
-                                ok = 2
-                            }
-                            if (ok == 2) {
-                                navController.navigate("FlashcardReview/$id")
-                            }
-                        }
-                ) {
-                    Text(
-                        text = "Finish",
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)
-                    )
-                }
+            if (name == "") {
+                Text(
+                    text = "Enter folder name",
+                    fontSize = 15.sp,
+                    color = Color.Red,
+                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                )
             }
+            else {
+                Text(
+                    text = "",
+                    fontSize = 15.sp,
+                    modifier = Modifier.height(10.dp).padding(bottom = 10.dp)
+                )
+            }
+
             if (firstCard.size >= flashcardNumber) {
                 LazyColumn(
                     modifier = Modifier.padding(bottom = 50.dp)

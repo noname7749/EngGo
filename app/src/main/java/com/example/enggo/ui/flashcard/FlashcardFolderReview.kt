@@ -54,6 +54,8 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import com.example.enggo.ui.flashcard.navigation.navigateToFlashcard
 
 
@@ -122,15 +124,34 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.edit_icon),
-                        contentDescription = "Edit Flashcard",
+                    IconButton(
+                        onClick = {
+                            folderCollectionRef.document(id).update("userId", "NULL")
+                                .addOnSuccessListener {
+                                    navController.navigate("Flashcard")
+                                }
+                        },
                         modifier = Modifier.size(40.dp)
                             .padding(end = 16.dp)
-                            .clickable {
-                                navController.navigate("FlashcardEdit/${id}")
-                            }
-                    )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete"
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            navController.navigate("FlashcardEdit/${id}")
+                        },
+                        modifier = Modifier.size(40.dp)
+                            .padding(end = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit"
+                        )
+                    }
                 }
             }
 
@@ -203,7 +224,7 @@ fun FlashcardFolderView(id : String, navController: NavController, modifier : Mo
             )
 
             Text(
-                text = "Cards",
+                text = "${firstCard.size} Cards",
                 fontSize = 25.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
