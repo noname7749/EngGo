@@ -22,6 +22,9 @@ class HomeViewModel(
     private val _recentCourses = MutableStateFlow<List<RecentCourse>>(emptyList())
     val recentCourses: StateFlow<List<RecentCourse>> = _recentCourses
 
+    private val _loginStreak = MutableStateFlow(0)
+    val loginStreak: StateFlow<Int> = _loginStreak
+
     init {
         fetchRecentCourses(userId = userId)
     }
@@ -53,6 +56,18 @@ class HomeViewModel(
 
             } catch (e: Exception) {
                 _recentCourses.value = emptyList()
+            }
+        }
+    }
+
+    fun fetchUserLoginStreak(userId: String) {
+        viewModelScope.launch {
+            try {
+                val streak = userService.getUserLoginStreak(userId)
+                _loginStreak.value = streak
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Error fetching login streak: ${e.message}")
+                _loginStreak.value = 0
             }
         }
     }

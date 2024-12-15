@@ -8,6 +8,9 @@ import com.example.enggo.model.course.Course
 import com.example.enggo.model.dictionary.WordModel
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Date
 
 class UserService(private val firestore: FirebaseFirestore): UserRepository {
@@ -26,6 +29,54 @@ class UserService(private val firestore: FirebaseFirestore): UserRepository {
         return result
     }
 
+    override suspend fun updateLoginStreak(userId: String): Boolean {
+        val userRef = firestore.collection("users").document(userId)
+        return try {
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val lastLoginDate = snapshot.getTimestamp("lastLoginDate")
+                val currentStreak = snapshot.getLong("loginStreak")?.toInt() ?: 0
+
+                val today = com.google.firebase.Timestamp.now()
+                val streak: Int
+
+                if (lastLoginDate != null) {
+                    val lastDate = Instant.ofEpochSecond(lastLoginDate.seconds)
+                        .atZone(ZoneId.systemDefault()).toLocalDate()
+                    val todayDate = Instant.ofEpochSecond(today.seconds)
+                        .atZone(ZoneId.systemDefault()).toLocalDate()
+
+                    val daysDifference = ChronoUnit.DAYS.between(lastDate, todayDate)
+                    streak = when {
+                        daysDifference == 1L -> currentStreak + 1
+                        daysDifference > 1L -> 1
+                        else -> currentStreak
+                    }
+                } else {
+                    streak = 1
+                }
+
+                transaction.update(userRef, "lastLoginDate", today)
+                transaction.update(userRef, "loginStreak", streak)
+                Log.d("LOGIN STREAK UPDATE FUNC", "Updated Streak: $streak")
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("FIRESTORE", "Error updating login streak: $e")
+            false
+        }
+    }
+
+
+    override suspend fun getUserLoginStreak(userId: String): Int {
+        val documentSnapshot = firestore.collection("users")
+            .document(userId)
+            .get()
+            .await()
+        Log.d("LOGIN STREAK", documentSnapshot.getLong("loginStreak")?.toInt().toString())
+        return documentSnapshot.getLong("loginStreak")?.toInt() ?: 0
+    }
+
     override suspend fun getUserDataById(userId: String): UserData? {
         var user: UserData? = null
         firestore.collection("users").document(userId).get()
@@ -36,7 +87,9 @@ class UserService(private val firestore: FirebaseFirestore): UserRepository {
                 val id = documentSnapshot.data?.get("id").toString()
                 val email = documentSnapshot.data?.get("email").toString()
                 val phone = documentSnapshot.data?.get("phone").toString()
-                user = UserData(userName, password, email, phone, id, profile)
+                val loginStreak = documentSnapshot.getLong("loginStreak")?.toInt() ?: 0
+                val lastLoginDate = documentSnapshot.getTimestamp("lastLoginDate")
+                user = UserData(userName, password, email, phone, id, profile, lastLoginDate = lastLoginDate, loginStreak = loginStreak)
 //                Log.d("FIRESTORE", "Get user data successfully: ${user!!.email}")
             }
             .addOnFailureListener { exception ->
@@ -143,6 +196,16 @@ class UserService(private val firestore: FirebaseFirestore): UserRepository {
         val querySnapshot = usernamesRef.get().await()
         if (!querySnapshot.isEmpty) {
             Log.d("FIRESTORE", "Login successfully")
+            val userId = querySnapshot.documents[0].getString("id") ?: return false
+            val updateSuccess = updateLoginStreak(userId)
+
+            if (updateSuccess) {
+                Log.d("FIRESTORE", "Login successfully")
+                val loginStreak = firestore.collection("users").document(userId).get().await()
+                    .getLong("loginStreak")?.toInt() ?: 0
+                Log.d("FIRESTORE LOGIN STREAK", "Login streak after update: $loginStreak")
+                return true
+            }
             return true
         }
         Log.e("FIRESTORE", "Login info incorrect")

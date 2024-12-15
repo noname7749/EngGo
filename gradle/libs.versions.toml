@@ -12,6 +12,7 @@ roomCommon = "2.6.1"
 firebaseFirestoreKtx = "25.1.1"
 firebaseMessagingKtx = "24.1.0"
 firebaseStorageKtx = "21.0.1"
+transportApi = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
