@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.example.enggo.ui.theme.EngGoTheme
 
 class LoginUITest {
 
@@ -49,21 +50,6 @@ class LoginUITest {
     }
 
     @Test
-    fun test_navigate_to_register_screen_when_register_link_is_clicked() {
-        // Thiết lập giao diện người dùng
-        composeTestRule.setContent {
-            LoginScreen(onLoginClick = {}, redirectToRegister = {})
-        }
-
-        // Nhấn vào liên kết "Don't have an account? Register"
-        composeTestRule.onNodeWithText("Don't have an account? Register")
-            .performClick()
-
-        // Kiểm tra xem chức năng chuyển hướng có được gọi không
-        // Điều này phụ thuộc vào cách bạn thực hiện hàm redirectToRegister
-    }
-
-    @Test
     fun verifyEmptyFieldsInitially() {
         composeTestRule.setContent {
             LoginScreen(onLoginClick = {}, redirectToRegister = {})
@@ -98,16 +84,92 @@ class LoginUITest {
             .assertIsDisplayed()
     }
 
+    // Test 1: Kiểm tra hiển thị logo và text welcome
     @Test
-    fun passwordVisibilityToggleFunction() {
+    fun verifyInitialScreenContent() {
         composeTestRule.setContent {
-            LoginScreen(onLoginClick = {}, redirectToRegister = {})
+            EngGoTheme {
+                LoginScreen(onLoginClick = {}, redirectToRegister = {})
+            }
         }
 
+        // Kiểm tra logo app
+        composeTestRule
+            .onNodeWithContentDescription("App Logo")
+            .assertExists()
+            .assertIsDisplayed()
+
+        // Kiểm tra text heading
+        composeTestRule
+            .onNodeWithText("Log in to EngGo")
+            .assertExists()
+            .assertIsDisplayed()
+
+        // Kiểm tra text welcome
+        composeTestRule
+            .onNodeWithText("Welcome back! Log in to your account to continue.")
+            .assertExists()
+            .assertIsDisplayed()
+    }
+
+    // Kiểm tra hiển thị leading icons của các input fields
+    @Test
+    fun verifyInputFieldsLeadingIcons() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                LoginScreen(onLoginClick = {}, redirectToRegister = {})
+            }
+        }
+
+        // Kiểm tra icon username
+        composeTestRule
+            .onNodeWithContentDescription("Username")
+            .assertExists()
+            .assertIsDisplayed()
+
+        // Kiểm tra icon password
         composeTestRule
             .onNodeWithContentDescription("Password")
-            .performTextInput("testpassword")
+            .assertExists()
+            .assertIsDisplayed()
+    }
 
+    // Test nhập ký tự đặc biệt vào username
+    @Test
+    fun inputSpecialCharactersInUsername() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                LoginScreen(onLoginClick = {}, redirectToRegister = {})
+            }
+        }
+
+        // Nhập ký tự đặc biệt vào username
+        composeTestRule
+            .onNodeWithText("Username")
+            .performTextInput("@#$%^&*()")
+
+        // Kiểm tra button login vẫn enabled
+        composeTestRule
+            .onNodeWithText("Log In")
+            .assertIsEnabled()
+    }
+
+    // Test hiệu ứng click vào các components
+    @Test
+    fun testClickableComponents() {
+        var linkClicked = false
+        var loginClicked = false
+
+        composeTestRule.setContent {
+            EngGoTheme {
+                LoginScreen(
+                    onLoginClick = { loginClicked = true },
+                    redirectToRegister = { linkClicked = true }
+                )
+            }
+        }
+
+        // Test click vào icon show/hide password
         composeTestRule
             .onNodeWithContentDescription("Show Password")
             .performClick()
@@ -115,5 +177,63 @@ class LoginUITest {
         composeTestRule
             .onNodeWithContentDescription("Hide Password")
             .assertExists()
+
+        // Test click vào link register
+        composeTestRule
+            .onNodeWithText("Don't have an account? Register")
+            .performClick()
+
+        // Verify các actions được trigger
+        assert(linkClicked)
+
+        // Test click login button
+        composeTestRule
+            .onNodeWithText("Username")
+            .performTextInput("testuser")
+        composeTestRule
+            .onNodeWithText("Password")
+            .performTextInput("testpass")
+        composeTestRule
+            .onNodeWithText("Log In")
+            .performClick()
+
+        assert(loginClicked)
+    }
+
+    @Test
+    fun testLongTextFieldInput() {
+        composeTestRule.setContent {
+            EngGoTheme {
+                LoginScreen(onLoginClick = {}, redirectToRegister = {})
+            }
+        }
+
+        // Tạo chuỗi dài (100 ký tự)
+        val longUsername = "a".repeat(100)
+        val longPassword = "b".repeat(100)
+
+        // Nhập username dài
+        composeTestRule
+            .onNodeWithText("Username")
+            .performTextInput(longUsername)
+
+        // Nhập password dài
+        composeTestRule
+            .onNodeWithText("Password")
+            .performTextInput(longPassword)
+
+        // Kiểm tra nội dung được nhập đầy đủ
+        composeTestRule
+            .onNode(hasText(longUsername))
+            .assertExists()
+
+        composeTestRule
+            .onNode(hasText(longPassword))
+            .assertExists()
+
+        // Kiểm tra TextField có hiển thị overflow ellipsis (...)
+        composeTestRule
+            .onNodeWithText("Username")
+            .assertTextContains("...")
     }
 }

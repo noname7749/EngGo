@@ -15,7 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -29,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,8 +61,8 @@ fun FlashcardHomeScreen(
     var names = remember { mutableStateListOf<String>() }
     var nums = remember { mutableStateListOf<String>() }
     var ids = remember { mutableStateListOf<String>() }
-    var ok by remember { mutableStateOf(0) }
-    var filterText by remember { mutableStateOf("Enter Filter") }
+    var ok by remember { mutableStateOf(inited) }
+    var filterText by remember { mutableStateOf("") }
     var init by remember {mutableStateOf(inited)}
 
     if (init == 1) {
@@ -71,7 +76,6 @@ fun FlashcardHomeScreen(
                     nums.add("")
                     names.add("")
                 }
-                Log.d("Firebase", "get document success")
             }
         init = 0
     }
@@ -94,30 +98,43 @@ fun FlashcardHomeScreen(
             }
     }
 
-    if (nums.size >= ids.size)
-        ok = 1
+    if (names.size >= ids.size) {
+        if (init == 0)
+            ok = 0
+    }
 
-    if (ok == 1) {
+    if (ok == 0) {
         Column(modifier = modifier) {
             FlashcardHomeTopbar(navController)
 
             TextField(
                 value = filterText,
                 onValueChange = { filterText = it },
-                label = { Text("Filter") },
+                placeholder = {
+                    Text("Search for a flashcard")
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Folder Search",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
                     .padding(start = 16.dp, bottom = 40.dp, end = 10.dp)
             )
 
-            if (nums.size >= ids.size) {
+            if (ok == 0) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     itemsIndexed(ids) { index, item ->
-                        FlashcardView(
-                            navController = navController,
-                            name = names[index],
-                            numOfItems = nums[index],
-                            id = ids[index]
-                        )
+                        if (names[index].startsWith(prefix = filterText, ignoreCase = true)) {
+                            FlashcardView(
+                                navController = navController,
+                                name = names[index],
+                                numOfItems = nums[index],
+                                id = ids[index]
+                            )
+                        }
                     }
                 }
             }

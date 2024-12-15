@@ -1,6 +1,7 @@
 package com.example.enggo.ui.profile
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -83,10 +85,11 @@ fun AccountManagementScreen(
     var email by remember { mutableStateOf("") }
 
     LaunchedEffect(idUser) {
-        if (idUser != null) {
-            userData = getCurrentAccountData(idUser,coroutineScope)
-            username = userData?.username ?: ""
-            email = userData?.email ?: ""
+        idUser?.let {
+            val data = getCurrentAccountData(idUser, coroutineScope) // Suspend function call
+            userData = data
+            username = data?.username ?: ""
+            email = data?.email ?: ""
         }
     }
     Column(
@@ -183,6 +186,7 @@ fun AccountManagementScreen(
         }
     }
 }
+
 suspend fun getCurrentAccountData(id: String, coroutineScope: CoroutineScope): UserData? {
     var userData: UserData? = null
     coroutineScope.launch {
@@ -221,10 +225,12 @@ fun ChangePasswordScreen(
     var userData by remember { mutableStateOf<UserData?>(null) }
 
     LaunchedEffect(idUser) {
-        if (idUser != null) {
-            userData = getCurrentAccountData(idUser,coroutineScope)
+        idUser?.let {
+            val data = getCurrentAccountData(idUser, coroutineScope) // Suspend function call
+            userData = data
         }
     }
+
 
     var newPassword by remember { mutableStateOf("") }
     var oldPassword by remember { mutableStateOf("") }
@@ -282,9 +288,10 @@ fun ChangePasswordScreen(
                     )
                 }
             )
-            if(userData?.password != oldPassword.toString() && oldPassword.toString() != "") {
+            if (userData != null && userData?.password != oldPassword.toString() && oldPassword.toString() != "") {
                 checkChangePassword = false
-                Text(text = "Password is incorrect!",
+                Text(
+                    text = "Password is incorrect!",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(start = 20.dp)
@@ -318,16 +325,15 @@ fun ChangePasswordScreen(
                 }
 
             )
-            if(oldPassword != confirmPassword && confirmPassword.toString() != "")
-            {
+            if (oldPassword != confirmPassword && confirmPassword.toString() != "") {
                 checkChangePassword = false
-                Text(text = "Confirm Password is incorrect!",
+                Text(
+                    text = "Confirm Password is incorrect!",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(start = 20.dp)
                 )
-            }
-            else {
+            } else {
                 checkChangePassword = true
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -342,7 +348,13 @@ fun ChangePasswordScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         if (newPassword.isNotEmpty()) {
-                            onPasswordChange(userData, newPassword, coroutineScope, onBackClick)
+                            onPasswordChange(
+                                userData,
+                                newPassword,
+                                coroutineScope,
+                                onBackClick,
+                                context
+                            )
                         }
                     }
                 ),
@@ -366,7 +378,11 @@ fun ChangePasswordScreen(
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { if(checkChangePassword){onPasswordChange(userData, newPassword, coroutineScope, onBackClick) }}) {
+            Button(onClick = {
+                if (checkChangePassword) {
+                    onPasswordChange(userData, newPassword, coroutineScope, onBackClick, context)
+                }
+            }) {
                 Text("Change Password")
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -379,12 +395,14 @@ fun onPasswordChange(
     password: String,
     coroutineScope: CoroutineScope,
     onDone: () -> Unit,
+    context: Context
 ){
     val userService = UserService(FirebaseFirestore.getInstance())
     val updatedUserData = userData?.copy(password = password)
     coroutineScope.launch {
         if (updatedUserData != null) {
             userService.updateUserData(updatedUserData.id, updatedUserData)
+            Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
         }
         onDone()
     }

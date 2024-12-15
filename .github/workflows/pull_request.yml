@@ -26,8 +26,16 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+            
+      - name: Create key.properties file
+        run: |
+          echo "open_AI_key=${{ secrets.open_AI_key }}" > /home/runner/work/EngGo/EngGo/key.properties
+        env:
+          open_AI_key: ${{ secrets.open_AI_key }}
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+
       - name: Run Debug Tests
         run: ./gradlew testDebugUnitTest --continue
     

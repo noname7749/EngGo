@@ -78,24 +78,21 @@ class UserService(private val firestore: FirebaseFirestore): UserRepository {
     }
 
     override suspend fun getUserDataById(userId: String): UserData? {
-        var user: UserData? = null
-        firestore.collection("users").document(userId).get()
-            .addOnSuccessListener {documentSnapshot ->
-                val userName = documentSnapshot.data?.get("username").toString()
-                val password = documentSnapshot.data?.get("password").toString()
-                val profile = documentSnapshot.data?.get("profile").toString()
-                val id = documentSnapshot.data?.get("id").toString()
-                val email = documentSnapshot.data?.get("email").toString()
-                val phone = documentSnapshot.data?.get("phone").toString()
-                val loginStreak = documentSnapshot.getLong("loginStreak")?.toInt() ?: 0
-                val lastLoginDate = documentSnapshot.getTimestamp("lastLoginDate")
-                user = UserData(userName, password, email, phone, id, profile, lastLoginDate = lastLoginDate, loginStreak = loginStreak)
-//                Log.d("FIRESTORE", "Get user data successfully: ${user!!.email}")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FIRESTORE ERROR", "Error getting user's profile data to Firestore: $exception")
-            }.await()
-        return user
+        try {
+            val document = firestore.collection("users").document(userId).get().await()
+            val userName = document.data?.get("username").toString()
+            val password = document.data?.get("password").toString()
+            val profile = document.data?.get("profile").toString()
+            val email = document.data?.get("email").toString()
+            val id = document.data?.get("id").toString()
+            val phone = document.data?.get("phone").toString()
+            val loginStreak = (document.data?.get("loginStreak") as? Long)?.toInt() ?: 0
+            val lastLoginDate = document.data?.get("lastLoginDate") as? com.google.firebase.Timestamp
+            return UserData(userName, password, email, phone, id, profile, lastLoginDate = lastLoginDate, loginStreak = loginStreak)
+        } catch (e: Exception) {
+            Log.e("UserService", "Error fetching user data: $e")
+        }
+        return null//user
     }
 
     override suspend fun getUserDataByUsername(userName: String): String? {
