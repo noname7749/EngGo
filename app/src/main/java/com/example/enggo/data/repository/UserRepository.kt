@@ -33,4 +33,7 @@ interface UserRepository {
     suspend fun isCourseExistInRecent(userId: String, courseId: Int): Boolean
     suspend fun updateCourseTimestamp(userId: String, courseId: Int): Boolean
     suspend fun getRecentCourses(userId: String): List<Map<String, Any>>
+
+    suspend fun updateLoginStreak(userId: String): Boolean
+    suspend fun getUserLoginStreak(userId: String): Int
 }

@@ -2,23 +2,34 @@ package com.example.enggo.ui.home
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -45,12 +56,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.enggo.R
@@ -86,9 +103,12 @@ internal fun HomeRoute(
     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(courseService, userService, currentUserId))
 
     val recentCourse by homeViewModel.recentCourses.collectAsState()
+    val loginStreak by homeViewModel.loginStreak.collectAsState()
+
     LaunchedEffect(currentUserId) {
         if (currentUserId.isNotEmpty()) {
             homeViewModel.fetchRecentCourses(currentUserId)
+            homeViewModel.fetchUserLoginStreak(currentUserId)
         }
     }
 
@@ -108,51 +128,220 @@ internal fun HomeRoute(
 
     HomeScreen(
         recentCoursesList = recentCourse,
+        loginStreak = loginStreak,
         onRecentCourseClick = onItemClick,
         onGenerateQuestionClick = onGenerateQuestionClick
     )
 }
 
+//@Composable
+//fun HomeScreen(
+//    recentCoursesList: List<RecentCourse>,
+//    loginStreak: Int,
+//    onRecentCourseClick: (Int, String) -> Unit,
+//    onGenerateQuestionClick: () -> Unit
+//) {
+//    // TODO()
+//
+//
+//    Scaffold(
+//        topBar = {
+//            HomeTopAppBar()
+//        }
+//    ) { paddingValues ->
+//        Column(modifier = Modifier.padding(paddingValues)
+//            .verticalScroll(rememberScrollState())
+//        ) {
+//            // TODO
+//            Text(
+//                text = "Your login streak: $loginStreak days",
+//                style = MaterialTheme.typography.titleMedium,
+//                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+//            )
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            if (recentCoursesList.isNotEmpty()) {
+//                Text(
+//                    text = "Recent Courses",
+//                    style = MaterialTheme.typography.titleMedium,
+//                    modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+//                )
+//
+//                RecentCourseListRow(
+//                    recentCoursesList = recentCoursesList,
+//                    onItemClick = onRecentCourseClick
+//                )
+//            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//            Text(
+//                text = "Generate your own T/F/NG",
+//                style = MaterialTheme.typography.titleMedium,
+//                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+//            )
+//            GenerateQuestionItem(
+//                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+//                onClick = onGenerateQuestionClick
+//            )
+//        }
+//    }
+//}
+
 @Composable
 fun HomeScreen(
     recentCoursesList: List<RecentCourse>,
+    loginStreak: Int,
     onRecentCourseClick: (Int, String) -> Unit,
     onGenerateQuestionClick: () -> Unit
 ) {
     // TODO()
 
 
-    Scaffold(
-        topBar = {
-            HomeTopAppBar()
-        }
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)
-            .verticalScroll(rememberScrollState())
-        ) {
-            // TODO
-            if (recentCoursesList.isNotEmpty()) {
-                Text(
-                    text = "Recent Courses",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+    Scaffold()
+    { paddingValues ->
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                .padding(
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp
                 )
+        ) {
+            var currentPage by remember { mutableStateOf(0) }
+            val intervalMillis: Long = 1000L
+            val imageList = listOf(
+                R.drawable.heading_image_1,
+                R.drawable.heading_image_2,
+                R.drawable.heading_image_3,
+                R.drawable.heading_image_4,
+            )
 
-                RecentCourseListRow(
-                    recentCoursesList = recentCoursesList,
-                    onItemClick = onRecentCourseClick
+            val transition = updateTransition(targetState = currentPage, label = "Image Transition")
+            val offsetX by transition.animateFloat(
+                label = "Offset Animation",
+                transitionSpec = { tween(durationMillis = 500) }
+            ) { page ->
+                if (page == currentPage) 0f else 1f
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clickable {
+                        currentPage = (currentPage + 1) % imageList.size
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = imageList[currentPage]),
+                    contentDescription = "Slideshow image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .offset(x = offsetX.dp),
+                    contentScale = ContentScale.Crop
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Generate your own T/F/NG",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            )
-            GenerateQuestionItem(
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-                onClick = onGenerateQuestionClick
-            )
+//            Image(
+//                painter = painterResource(id = R.drawable.heading_image_1),
+//                contentDescription = null,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimensionResource(R.dimen.padding_small)),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                imageList.forEachIndexed { index, _ ->
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (index == currentPage)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            .padding(horizontal = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
+
+            Card(
+                modifier = Modifier
+                    .fillMaxSize(),
+                shape = RoundedCornerShape(
+                    topStart = dimensionResource(R.dimen.padding_medium),
+                    topEnd = dimensionResource(R.dimen.padding_medium),
+                    bottomStart = 0.dp,
+                    bottomEnd = 0.dp
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+
+            ) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimensionResource(R.dimen.padding_medium))
+                    .verticalScroll(rememberScrollState())
+                ) {
+                    // TODO
+                    Card(
+                        elevation = CardDefaults.cardElevation(),
+                        modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)).fillMaxWidth(),
+                        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.fire),
+                                modifier = Modifier.size(dimensionResource(R.dimen.small_icon_image_size)),
+                                contentDescription = null,
+                                tint = Color.Unspecified
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Your login streak: $loginStreak days",
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
+
+                    if (recentCoursesList.isNotEmpty()) {
+                        Text(
+                            text = "Recent Courses",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                        )
+
+                        RecentCourseListRow(
+                            recentCoursesList = recentCoursesList,
+                            onItemClick = onRecentCourseClick
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Generate your own T/F/NG",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                    )
+                    GenerateQuestionItem(
+                        modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                        onClick = onGenerateQuestionClick
+                    )
+                }
+            }
         }
     }
 }
